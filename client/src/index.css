@@ -1,0 +1,43 @@
+@import "tailwindcss";
+
+/* Menambahkan font Inter dari Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+@theme {
+  /*
+    Palet Black & White baru
+    Primary/Accent sekarang adalah hitam pekat (black)
+    Grays menggunakan 'zinc' untuk nuansa yang lebih dingin & modern
+  */
+  --color-theme-primary: theme(colors.black);
+  --color-theme-primary-dark: theme(colors.zinc.800);
+  --color-theme-primary-light: theme(colors.zinc.100);
+
+  /* Background aplikasi (abu-abu sangat muda) */
+  --color-app-bg: theme(colors.zinc.50);
+  /* Background konten & sidebar (putih bersih) */
+  --color-content-bg: theme(colors.white);
+  --color-sidebar-bg: theme(colors.white);
+  
+  /* Teks utama (hitam pekat) */
+  --color-text-main: theme(colors.zinc.900);
+  /* Teks sekunder (abu-abu gelap) */
+  --color-text-muted: theme(colors.zinc.600);
+  /* Teks placeholder/subtle (abu-abu muda) */
+  --color-text-subtle: theme(colors.zinc.400);
+
+  /* Border (abu-abu sangat muda) */
+  --color-border-main: theme(colors.zinc.200);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply bg-app-bg text-text-main;
+  /* Menggunakan font Inter sebagai font utama */
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
