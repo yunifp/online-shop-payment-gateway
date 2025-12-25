@@ -1,21 +1,17 @@
+
 import React from 'react';
 import { FaPlus, FaTrash } from 'react-icons/fa';
 
 const formatCurrency = (value) => {
   if (value === null || value === undefined) return '';
-  
-  // PERBAIKAN: Gunakan parseFloat untuk menangani nilai desimal "4000.00"
   const numberValue = parseFloat(value); 
-  
   if (isNaN(numberValue) || numberValue === 0) return '';
-  
   return new Intl.NumberFormat('id-ID', {
     style: 'currency',
     currency: 'IDR',
     minimumFractionDigits: 0,
-  }).format(numberValue); // Format angka yang sudah diparsing
+  }).format(numberValue);
 };
-
 
 const parseCurrency = (value) => {
   return value.replace(/[^0-9]/g, '');
@@ -23,6 +19,10 @@ const parseCurrency = (value) => {
 
 const ProdukModal = ({ product, categories, onClose, onSave, slugify }) => {
   const isEditMode = !!product;
+  
+  // Ambil Base URL Server
+  const API_URL = import.meta.env.VITE_API_URL;
+  const BASE_URL = API_URL ? API_URL.replace('/api/v1', '') : '';
 
   const [productData, setProductData] = React.useState({
     name: '',
@@ -63,7 +63,6 @@ const ProdukModal = ({ product, categories, onClose, onSave, slugify }) => {
         : [{ id: null, color: '', size: '', price: 0, stock: '', images: [] }];
         
       setVariants(initialVariants);
-      // Fungsi formatCurrency yang baru akan menangani ini dengan benar
       setDisplayedPrices(initialVariants.map(v => formatCurrency(v.price)));
       setFiles(initialVariants.map(() => []));
       setPreviewUrls(initialVariants.map(() => []));
@@ -84,7 +83,6 @@ const ProdukModal = ({ product, categories, onClose, onSave, slugify }) => {
       cleanUpPreviews();
     };
   }, [previewUrls]);
-
 
   const handleProductChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -190,6 +188,7 @@ const ProdukModal = ({ product, categories, onClose, onSave, slugify }) => {
         </h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* ... (Form Fields Bagian Atas Sama Seperti Sebelumnya) ... */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -343,10 +342,15 @@ const ProdukModal = ({ product, categories, onClose, onSave, slugify }) => {
                   </label>
                   
                   <div className="flex flex-wrap gap-2 mb-2">
+                    {/* BAGIAN YANG DIPERBAIKI: Menambahkan BASE_URL ke image_url */}
                     {isEditMode && variant.images && variant.images.length > 0 && (
                       variant.images.map(img => (
                         <div key={img.id} className="relative">
-                          <img src={img.image_url} alt="Existing" className="w-20 h-20 object-cover rounded"/>
+                          <img 
+                            src={`${BASE_URL}${img.image_url}`} 
+                            alt="Existing" 
+                            className="w-20 h-20 object-cover rounded"
+                          />
                           <button
                             type="button"
                             onClick={() => removeExistingImage(index, img.id)}
@@ -357,6 +361,7 @@ const ProdukModal = ({ product, categories, onClose, onSave, slugify }) => {
                         </div>
                       ))
                     )}
+                    {/* Bagian Preview untuk file baru (tidak butuh BASE_URL karena blob local) */}
                     {previewUrls[index] && previewUrls[index].length > 0 && (
                       previewUrls[index].map((url, i) => (
                         <div key={i} className="relative">

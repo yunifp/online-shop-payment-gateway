@@ -1,5 +1,6 @@
+
 import React, { useState } from 'react';
-import { FaPlus, FaPencilAlt, FaTrash } from 'react-icons/fa';
+import { FaPlus, FaPencilAlt, FaTrash, FaImage } from 'react-icons/fa';
 import { useProduk } from '../../hooks/useProduct';
 import ProdukModal from '../../components/ProdukModal';
 import { Toaster } from 'react-hot-toast';
@@ -12,7 +13,7 @@ const formatCurrency = (number) => {
   }).format(number);
 };
 
-const Produk = () => {
+const ProdukList = () => {
   const {
     products,
     categories,
@@ -26,6 +27,10 @@ const Produk = () => {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentProduct, setCurrentProduct] = useState(null);
+
+  // Ambil Base URL Server dengan menghapus suffix '/api/v1'
+  const API_URL = import.meta.env.VITE_API_URL;
+  const BASE_URL = API_URL ? API_URL.replace('/api/v1', '') : '';
 
   const handleOpenModal = (product = null) => {
     setCurrentProduct(product);
@@ -98,6 +103,19 @@ const Produk = () => {
     return variants[0].price;
   };
 
+  // Helper untuk mendapatkan URL thumbnail
+  const getProductThumbnail = (variants) => {
+    if (!variants || variants.length === 0) return null;
+    
+    // Cari gambar dari varian pertama yang memiliki gambar
+    for (const variant of variants) {
+      if (variant.images && variant.images.length > 0) {
+        return variant.images[0].image_url;
+      }
+    }
+    return null;
+  };
+
   return (
     <>
       <Toaster position="top-right" />
@@ -118,6 +136,13 @@ const Produk = () => {
           <table className="min-w-full divide-y divide-border-main">
             <thead className="bg-gray-50">
               <tr>
+                 {/* KOLOM BARU: Gambar */}
+                <th
+                  scope="col"
+                  className="px-6 py-4 text-left text-xs font-semibold text-text-muted uppercase tracking-wider"
+                >
+                  Gambar
+                </th>
                 <th
                   scope="col"
                   className="px-6 py-4 text-left text-xs font-semibold text-text-muted uppercase tracking-wider"
@@ -160,7 +185,7 @@ const Produk = () => {
               {loading && (
                 <tr>
                   <td
-                    colSpan="6"
+                    colSpan="7"
                     className="px-6 py-4 text-center text-text-muted"
                   >
                     Loading...
@@ -170,7 +195,7 @@ const Produk = () => {
               {error && (
                 <tr>
                   <td
-                    colSpan="6"
+                    colSpan="7"
                     className="px-6 py-4 text-center text-red-500"
                   >
                     Error: {error}
@@ -182,11 +207,28 @@ const Produk = () => {
                 products.map((product) => {
                   const totalStock = getProductStock(product.variants);
                   const price = getProductPrice(product.variants);
+                  const thumbUrl = getProductThumbnail(product.variants);
+
                   return (
                     <tr
                       key={product.id}
                       className="hover:bg-gray-50 transition-colors duration-150"
                     >
+                      {/* ISI KOLOM GAMBAR */}
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {thumbUrl ? (
+                          <img 
+                            src={`${BASE_URL}${thumbUrl}`} 
+                            alt={product.name} 
+                            className="h-12 w-12 object-cover rounded-md border border-gray-200"
+                          />
+                        ) : (
+                          <div className="h-12 w-12 bg-gray-100 rounded-md flex items-center justify-center text-gray-400">
+                            <FaImage />
+                          </div>
+                        )}
+                      </td>
+
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className="text-sm font-medium text-text-main">
                           {product.name}
@@ -259,4 +301,4 @@ const Produk = () => {
   );
 };
 
-export default Produk;
+export default ProdukList;
