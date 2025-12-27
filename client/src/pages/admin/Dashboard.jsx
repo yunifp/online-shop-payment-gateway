@@ -4,6 +4,8 @@ import {
   ReceiptText,
   Package,
   Truck,
+  ShoppingBag,
+  Clock
 } from 'lucide-react';
 
 
@@ -28,6 +30,46 @@ const StatCard = ({ icon, title, value, description }) => {
 };
 
 const Dashboard = () => {
+  const user = JSON.parse(localStorage.getItem("user"));
+  const isUser = user?.role === 'user';
+
+  if (isUser) {
+    return (
+      <>
+        <h1 className="text-4xl font-bold text-text-main mb-8">
+          Halo, {user?.name || 'Pelanggan'}
+        </h1>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <StatCard
+            icon={ShoppingBag}
+            title="Total Pesanan"
+            value="12"
+            description="Riwayat belanja anda"
+          />
+          <StatCard
+            icon={Truck}
+            title="Dalam Pengiriman"
+            value="2"
+            description="Pesanan sedang dikirim"
+          />
+          <StatCard
+            icon={Clock}
+            title="Menunggu Pembayaran"
+            value="1"
+            description="Segera selesaikan pembayaran"
+          />
+        </div>
+
+        <div className="mt-8 bg-content-bg p-6 rounded-2xl shadow-sm border border-border-main">
+          <h3 className="text-xl font-semibold mb-4 text-text-main">
+            Pesanan Terbaru
+          </h3>
+          <p className="text-text-muted">Silahkan cek menu Pesanan untuk detail lengkap.</p>
+        </div>
+      </>
+    );
+  }
+
   return (
     <>
       <h1 className="text-4xl font-bold text-text-main mb-8">

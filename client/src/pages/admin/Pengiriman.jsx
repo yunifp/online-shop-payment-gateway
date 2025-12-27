@@ -1,19 +1,21 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { FaSearch, FaBox, FaTruckLoading, FaShippingFast, FaCheckCircle } from 'react-icons/fa';
+import { useTransaction } from '../../hooks/useTransaction';
 
 const StatusStepper = ({ status }) => {
+  // Mapping urutan status untuk visualisasi stepper
   const steps = [
-    { name: 'Dikemas', icon: FaBox },
-    { name: 'Dikirim', icon: FaTruckLoading },
-    { name: 'Dalam Perjalanan', icon: FaShippingFast },
-    { name: 'Tiba', icon: FaCheckCircle },
+    { name: 'Dibayar', icon: FaBox },
+    { name: 'Dikemas', icon: FaTruckLoading },
+    { name: 'Dikirim', icon: FaShippingFast },
+    { name: 'Selesai', icon: FaCheckCircle },
   ];
   
   const statusIndex = {
-    'dikemas': 0,
-    'dikirim': 1,
-    'perjalanan': 2,
-    'tiba': 3,
+    'paid': 0,
+    'processing': 1,
+    'shipped': 2,
+    'completed': 3,
   };
   
   const currentIndex = statusIndex[status] ?? 0;
@@ -40,17 +42,30 @@ const StatusStepper = ({ status }) => {
 };
 
 const Pengiriman = () => {
-  const trackingInfo = {
-    resi: 'JNE-123456789',
-    status: 'perjalanan',
-    estimasi: '31 Oktober 2025',
-  };
+  const { transactions, loading, fetchTransactions } = useTransaction();
+  const [searchTerm, setSearchTerm] = useState('');
+  const [searchResult, setSearchResult] = useState(null);
 
-  const daftarPengiriman = [
-    { id: 'TRX-001', resi: 'JNE-123456789', status: 'perjalanan', pelanggan: 'Budi' },
-    { id: 'TRX-002', resi: 'SICEPAT-987654', status: 'dikirim', pelanggan: 'Citra' },
-    { id: 'TRX-003', resi: 'JNT-001122', status: 'tiba', pelanggan: 'Doni' },
-  ];
+  useEffect(() => {
+    // Halaman Pengiriman fokus menampilkan barang yang statusnya 'shipped' (Dalam Pengiriman)
+    fetchTransactions({ status: 'shipped', limit: 20 });
+  }, [fetchTransactions]);
+
+  const handleSearch = () => {
+    if (!searchTerm) return;
+    // Mencari di list yang sudah di-fetch (lokal)
+    const found = transactions.find(t => 
+      t.order_id_display.toLowerCase().includes(searchTerm.toLowerCase()) || 
+      (t.shipping_receipt_number && t.shipping_receipt_number.toLowerCase().includes(searchTerm.toLowerCase()))
+    );
+    
+    if (found) {
+        setSearchResult(found);
+    } else {
+        setSearchResult(null);
+        alert('Data tidak ditemukan di daftar pengiriman aktif.');
+    }
+  };
 
   return (
     <div className="space-y-8">
@@ -59,7 +74,7 @@ const Pengiriman = () => {
       </h1>
 
       <div className="bg-content-bg shadow-md rounded-lg p-4 md:p-6">
-        <h2 className="text-lg md:text-xl font-semibold text-text-main mb-4">Lacak Pesanan</h2>
+        <h2 className="text-lg md:text-xl font-semibold text-text-main mb-4">Lacak & Cek Pesanan</h2>
         <div className="flex flex-col md:flex-row md:space-x-4 space-y-3 md:space-y-0">
           <div className="relative flex-1">
             <span className="absolute inset-y-0 left-0 flex items-center pl-3">
@@ -67,66 +82,80 @@ const Pengiriman = () => {
             </span>
             <input 
               type="text" 
-              placeholder="Masukkan Nomor Resi..." 
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Masukkan Order ID atau No. Resi..." 
               className="w-full pl-10 pr-4 py-2 rounded-lg border border-border-main bg-slate-50 focus:border-theme-primary"
             />
           </div>
-          <button className="bg-theme-primary hover:bg-theme-primary-dark text-white font-medium py-2 px-6 rounded-lg w-full md:w-auto">
-            Lacak
+          <button 
+            onClick={handleSearch}
+            className="bg-theme-primary hover:bg-theme-primary-dark text-white font-medium py-2 px-6 rounded-lg w-full md:w-auto">
+            Cari
           </button>
         </div>
         
-        <div className="mt-6 border-t border-border-main pt-6">
-          <h3 className="text-base md:text-lg font-semibold">Hasil: {trackingInfo.resi}</h3>
-          <p className="text-text-muted text-sm md:text-base">Estimasi Tiba: {trackingInfo.estimasi}</p>
-          <div className="mt-4">
-            <StatusStepper status={trackingInfo.status} />
+        {searchResult && (
+          <div className="mt-6 border-t border-border-main pt-6">
+            <h3 className="text-base md:text-lg font-semibold">Order: {searchResult.order_id_display}</h3>
+            <p className="text-text-muted text-sm md:text-base">Resi: {searchResult.shipping_receipt_number || 'Belum ada resi'}</p>
+            <div className="mt-4">
+              <StatusStepper status={searchResult.status} />
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       <div className="bg-content-bg shadow-md rounded-lg overflow-hidden">
         <h2 className="text-lg md:text-xl font-semibold text-text-main p-4 md:p-6">Daftar Pengiriman Aktif</h2>
 
-        <div className="hidden md:block overflow-x-auto">
-          <table className="min-w-full divide-y divide-border-main">
-            <thead className="bg-slate-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">Order ID</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">No. Resi</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">Pelanggan</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">Status</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-border-main">
-              {daftarPengiriman.map((item) => (
-                <tr key={item.id} className="hover:bg-slate-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-theme-primary">{item.id}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-text-main">{item.resi}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-text-muted">{item.pelanggan}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${item.status === 'tiba' ? 'bg-green-100 text-green-800' : item.status === 'perjalanan' ? 'bg-blue-100 text-blue-800' : 'bg-yellow-100 text-yellow-800'}`}>
-                      {item.status}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        <div className="md:hidden space-y-3 p-3">
-          {daftarPengiriman.map((item) => (
-            <div key={item.id} className="bg-white border rounded-lg p-4 space-y-1 shadow-sm active:scale-[.98]">
-              <p className="text-theme-primary font-semibold text-sm">{item.id}</p>
-              <p className="text-sm text-text-main">{item.resi}</p>
-              <p className="text-sm text-text-muted">{item.pelanggan}</p>
-              <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${item.status === 'tiba' ? 'bg-green-100 text-green-800' : item.status === 'perjalanan' ? 'bg-blue-100 text-blue-800' : 'bg-yellow-100 text-yellow-800'}`}>
-                {item.status}
-              </span>
+        {loading ? (
+            <p className="p-6 text-text-muted">Memuat data...</p>
+        ) : transactions.length === 0 ? (
+            <p className="p-6 text-text-muted">Tidak ada pengiriman aktif (Shipped) saat ini.</p>
+        ) : (
+          <>
+            <div className="hidden md:block overflow-x-auto">
+              <table className="min-w-full divide-y divide-border-main">
+                <thead className="bg-slate-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">Order ID</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">No. Resi</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">Pelanggan</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">Ekspedisi</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-border-main">
+                  {transactions.map((item) => (
+                    <tr key={item.id} className="hover:bg-slate-50">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-theme-primary">{item.order_id_display}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-text-main">{item.shipping_receipt_number || '-'}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-text-muted">{item.user?.name}</td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                          {(item.courier || 'Ekspedisi').toUpperCase()}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-          ))}
-        </div>
+
+            <div className="md:hidden space-y-3 p-3">
+              {transactions.map((item) => (
+                <div key={item.id} className="bg-white border rounded-lg p-4 space-y-1 shadow-sm active:scale-[.98]">
+                  <p className="text-theme-primary font-semibold text-sm">{item.order_id_display}</p>
+                  <p className="text-sm text-text-main">Resi: {item.shipping_receipt_number || '-'}</p>
+                  <p className="text-sm text-text-muted">{item.user?.name}</p>
+                  <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                    {(item.courier || 'Ekspedisi').toUpperCase()}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

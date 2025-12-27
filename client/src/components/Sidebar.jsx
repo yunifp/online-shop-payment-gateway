@@ -61,6 +61,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
   const [isProdukOpen, setProdukOpen] = useState(false);
   const location = useLocation();
   const user = JSON.parse(localStorage.getItem("user"));
+  const isUser = user?.role === 'user';
 
   const isProdukActive =
     location.pathname.startsWith('/admin/produk') ||
@@ -95,76 +96,81 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
         setIsOpen={setIsOpen}
       />
 
-      <div>
-        <button
-          onClick={handleProdukClick}
-          className={`relative flex items-center justify-between w-full h-10 p-3 my-1 rounded-lg transition-all duration-300 group ${
-            isProdukActive
-              ? 'bg-gray-100 text-text-main font-semibold'
-              : 'text-text-muted hover:bg-gray-100 hover:text-text-main'
-          } ${!isOpen ? 'justify-center' : ''}`}
-        >
-          <div className="flex items-center">
-            <div className="flex-shrink-0 w-6 h-6 flex items-center justify-center">
-              <Package size={20} />
+      {!isUser && (
+        <div>
+          <button
+            onClick={handleProdukClick}
+            className={`relative flex items-center justify-between w-full h-10 p-3 my-1 rounded-lg transition-all duration-300 group ${
+              isProdukActive
+                ? 'bg-gray-100 text-text-main font-semibold'
+                : 'text-text-muted hover:bg-gray-100 hover:text-text-main'
+            } ${!isOpen ? 'justify-center' : ''}`}
+          >
+            <div className="flex items-center">
+              <div className="flex-shrink-0 w-6 h-6 flex items-center justify-center">
+                <Package size={20} />
+              </div>
+              <span
+                className={`transition-all duration-200 ${
+                  isOpen ? 'ml-3 opacity-100' : 'opacity-0 w-0 h-0 overflow-hidden'
+                }`}
+              >
+                Produk
+              </span>
             </div>
-            <span
-              className={`transition-all duration-200 ${
-                isOpen ? 'ml-3 opacity-100' : 'opacity-0 w-0 h-0 overflow-hidden'
-              }`}
-            >
-              Produk
-            </span>
+            {isOpen && (
+              <ChevronDown
+                size={16}
+                className={`transition-transform duration-300 ${
+                  isProdukOpen ? 'rotate-180' : ''
+                }`}
+              />
+            )}
+
+            {!isOpen && (
+              <span className="absolute left-full ml-4 px-3 py-1.5 bg-black text-white text-xs font-medium rounded-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50 shadow-lg">
+                Produk
+              </span>
+            )}
+          </button>
+
+          <div
+            className={`transition-all duration-300 overflow-hidden ${
+              isProdukOpen && isOpen ? 'max-h-40' : 'max-h-0'
+            }`}
+          >
+            {isOpen && (
+              <div className="pl-5 my-1">
+                <SidebarLink
+                  to="/admin/produk"
+                  icon={<List size={18} />}
+                  text="List Produk"
+                  isOpen={isOpen}
+                  setIsOpen={setIsOpen}
+                />
+                <SidebarLink
+                  to="/admin/kategori"
+                  icon={<Tag size={18} />}
+                  text="Kategori"
+                  isOpen={isOpen}
+                  setIsOpen={setIsOpen}
+                />
+              </div>
+            )}
           </div>
-          {isOpen && (
-            <ChevronDown
-              size={16}
-              className={`transition-transform duration-300 ${
-                isProdukOpen ? 'rotate-180' : ''
-              }`}
-            />
-          )}
-
-          {!isOpen && (
-            <span className="absolute left-full ml-4 px-3 py-1.5 bg-black text-white text-xs font-medium rounded-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50 shadow-lg">
-              Produk
-            </span>
-          )}
-        </button>
-
-        <div
-          className={`transition-all duration-300 overflow-hidden ${
-            isProdukOpen && isOpen ? 'max-h-40' : 'max-h-0'
-          }`}
-        >
-          {isOpen && (
-            <div className="pl-5 my-1">
-              <SidebarLink
-                to="/admin/produk"
-                icon={<List size={18} />}
-                text="List Produk"
-                isOpen={isOpen}
-                setIsOpen={setIsOpen}
-              />
-              <SidebarLink
-                to="/admin/kategori"
-                icon={<Tag size={18} />}
-                text="Kategori"
-                isOpen={isOpen}
-                setIsOpen={setIsOpen}
-              />
-            </div>
-          )}
         </div>
-      </div>
+      )}
 
-      <SidebarLink
-        to="/admin/voucher"
-        icon={<Ticket size={20} />}
-        text="Voucher"
-        isOpen={isOpen}
-        setIsOpen={setIsOpen}
-      />
+      {!isUser && (
+        <SidebarLink
+          to="/admin/voucher"
+          icon={<Ticket size={20} />}
+          text="Voucher"
+          isOpen={isOpen}
+          setIsOpen={setIsOpen}
+        />
+      )}
+      
       <SidebarLink
         to="/admin/pengiriman"
         icon={<Truck size={20} />}

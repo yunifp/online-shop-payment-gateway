@@ -1,21 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import PesananDetailModal from '../../components/PesananDetailModal';
-
-const mockPesanan = {
-  perluDiproses: [
-    { id: 'TRX-1005', date: '27 Okt 2025', customer: { name: 'Dewi Ayu', email:'dewi@example.com' }, total: 450000, resi: 'N/A', status: 'perluDiproses', items:[{ id:5,name:'Sleeping Bag',qty:1,price:450000 }], address:{street:'Jl. Sudirman 50',city:'Yogyakarta',zip:'55111'} },
-  ],
-  sukses: [
-    { id:'TRX-1001',date:'25 Okt 2025',customer:{name:'Andi Wijaya',email:'andi@example.com'},total:1500000,resi:'JNT-001122',status:'sukses',items:[{id:1,name:'Tenda Dome',qty:1,price:1500000}],address:{street:'Jl. Merdeka 10',city:'Jakarta',zip:'10110'} },
-    { id:'TRX-1003',date:'24 Okt 2025',customer:{name:'Siti Aminah',email:'siti@example.com'},total:850000,resi:'JNE-554433',status:'sukses',items:[{id:2,name:'Sepatu Gunung',qty:1,price:850000}],address:{street:'Jl. Kembang 2',city:'Bandung',zip:'40111'} },
-  ],
-  dikirim: [
-    { id:'TRX-1004',date:'26 Okt 2025',customer:{name:'Citra Lestari',email:'citra@example.com'},total:2200000,resi:'SICEPAT-998877',status:'dikirim',items:[{id:4,name:'Carrier 60L',qty:1,price:2200000}],address:{street:'Jl. Anggrek 1',city:'Medan',zip:'20111'} },
-  ],
-  gagal: [
-    { id:'TRX-1002',date:'24 Okt 2025',customer:{name:'Budi Hartono',email:'budi@example.com'},total:300000,resi:'N/A',status:'gagal',items:[{id:3,name:'Cooking Set',qty:1,price:300000}],address:{street:'Jl. Mawar 5',city:'Surabaya',zip:'60111'} },
-  ],
-};
+import { useTransaction } from '../../hooks/useTransaction';
 
 const formatCurrency = (amount) => {
   return new Intl.NumberFormat('id-ID', {
@@ -26,25 +11,38 @@ const formatCurrency = (amount) => {
 };
 
 const Pesanan = () => {
-  const [activeTab, setActiveTab] = useState('perluDiproses');
+  const { transactions, loading, fetchTransactions, updateTransactionStatus } = useTransaction();
+  const [activeTab, setActiveTab] = useState('pending');
   const [isModalOpen, setModalOpen] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState(null);
 
   const tabs = [
-    { key: 'perluDiproses', label: 'Perlu Diproses' },
-    { key: 'sukses', label: 'Sukses' },
-    { key: 'dikirim', label: 'Dalam Pengiriman' },
-    { key: 'gagal', label: 'Gagal' },
+    { key: 'pending', label: 'Belum Bayar' },
+    { key: 'paid', label: 'Perlu Diproses' },
+    { key: 'processing', label: 'Sedang Dikemas' },
+    { key: 'shipped', label: 'Dalam Pengiriman' },
+    { key: 'completed', label: 'Selesai' },
+    { key: 'cancelled', label: 'Dibatalkan' },
   ];
+
+  useEffect(() => {
+    fetchTransactions({ status: activeTab, limit: 50 });
+  }, [activeTab, fetchTransactions]);
 
   const handleRowClick = (transaction) => {
     setSelectedTransaction(transaction);
     setModalOpen(true);
   };
 
-  const renderTable = (status) => {
-    const data = mockPesanan[status];
-    if (data.length === 0) return <p className="p-6 text-text-muted">Tidak ada transaksi.</p>;
+  const handleUpdateStatus = async (id, newStatus, resi) => {
+    await updateTransactionStatus(id, newStatus, resi);
+    setModalOpen(false);
+    fetchTransactions({ status: activeTab, limit: 50 });
+  };
+
+  const renderTable = () => {
+    if (loading) return <p className="p-6 text-text-muted">Memuat data...</p>;
+    if (transactions.length === 0) return <p className="p-6 text-text-muted">Tidak ada transaksi pada status ini.</p>;
     
     return (
       <>
@@ -57,16 +55,29 @@ const Pesanan = () => {
                 <th className="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">Pelanggan</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">Total</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">No. Resi</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">Status</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-border-main">
-              {data.map((tx) => (
+              {transactions.map((tx) => (
                 <tr key={tx.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => handleRowClick(tx)}>
-                  <td className="px-6 py-4 text-sm font-medium text-theme-primary">{tx.id}</td>
-                  <td className="px-6 py-4 text-sm text-text-muted">{tx.date}</td>
-                  <td className="px-6 py-4 text-sm text-text-main">{tx.customer.name}</td>
-                  <td className="px-6 py-4 text-sm font-medium text-text-main">{formatCurrency(tx.total)}</td>
-                  <td className="px-6 py-4 text-sm text-text-muted">{tx.resi}</td>
+                  <td className="px-6 py-4 text-sm font-medium text-theme-primary">{tx.order_id_display}</td>
+                  <td className="px-6 py-4 text-sm text-text-muted">
+                    {new Date(tx.createdAt).toLocaleDateString('id-ID')}
+                  </td>
+                  <td className="px-6 py-4 text-sm text-text-main">{tx.user?.name || 'User Dihapus'}</td>
+                  <td className="px-6 py-4 text-sm font-medium text-text-main">{formatCurrency(tx.grand_total)}</td>
+                  <td className="px-6 py-4 text-sm text-text-muted">{tx.shipping_receipt_number || '-'}</td>
+                  <td className="px-6 py-4 text-sm">
+                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                      ${tx.status === 'paid' ? 'bg-yellow-100 text-yellow-800' : 
+                        tx.status === 'completed' ? 'bg-green-100 text-green-800' : 
+                        tx.status === 'cancelled' ? 'bg-red-100 text-red-800' : 
+                        tx.status === 'pending' ? 'bg-gray-100 text-gray-800' :
+                        'bg-blue-100 text-blue-800'}`}>
+                      {tx.status.toUpperCase()}
+                    </span>
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -74,13 +85,16 @@ const Pesanan = () => {
         </div>
 
         <div className="md:hidden space-y-3 p-3">
-          {data.map((tx) => (
+          {transactions.map((tx) => (
             <div key={tx.id} onClick={() => handleRowClick(tx)} className="bg-white border rounded-lg p-4 space-y-1 shadow-sm cursor-pointer active:scale-[.98]">
-              <p className="text-theme-primary font-semibold text-sm">{tx.id}</p>
-              <p className="text-xs text-text-muted">{tx.date}</p>
-              <p className="text-sm text-text-main">{tx.customer.name}</p>
-              <p className="font-semibold">{formatCurrency(tx.total)}</p>
-              <p className="text-xs text-text-muted">Resi: {tx.resi}</p>
+              <div className="flex justify-between items-start">
+                <p className="text-theme-primary font-semibold text-sm">{tx.order_id_display}</p>
+                <span className="text-xs font-medium bg-gray-100 px-2 py-0.5 rounded text-text-muted">{tx.status}</span>
+              </div>
+              <p className="text-xs text-text-muted">{new Date(tx.createdAt).toLocaleDateString('id-ID')}</p>
+              <p className="text-sm text-text-main">{tx.user?.name}</p>
+              <p className="font-semibold">{formatCurrency(tx.grand_total)}</p>
+              <p className="text-xs text-text-muted mt-1">Resi: {tx.shipping_receipt_number || '-'}</p>
             </div>
           ))}
         </div>
@@ -105,7 +119,7 @@ const Pesanan = () => {
                     : 'border-transparent text-text-muted hover:text-text-main hover:border-gray-300'
                 }`}
               >
-                {tab.label} ({mockPesanan[tab.key].length})
+                {tab.label}
               </button>
             ))}
           </nav>
@@ -113,14 +127,17 @@ const Pesanan = () => {
 
         <div className="h-[1px] bg-gray-200 w-full"></div>
         
-        <div>{renderTable(activeTab)}</div>
+        <div>{renderTable()}</div>
       </div>
 
-      <PesananDetailModal 
-        isOpen={isModalOpen}
-        onClose={() => setModalOpen(false)}
-        transaction={selectedTransaction}
-      />
+      {selectedTransaction && (
+        <PesananDetailModal 
+          isOpen={isModalOpen}
+          onClose={() => setModalOpen(false)}
+          transaction={selectedTransaction}
+          onUpdateStatus={handleUpdateStatus}
+        />
+      )}
     </>
   );
 };
