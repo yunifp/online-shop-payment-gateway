@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { FaPlus, FaPencilAlt, FaTrash, FaImage } from 'react-icons/fa';
 import { useProduk } from '../../hooks/useProduct';
@@ -28,7 +27,6 @@ const ProdukList = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentProduct, setCurrentProduct] = useState(null);
 
-  // Ambil Base URL Server dengan menghapus suffix '/api/v1'
   const API_URL = import.meta.env.VITE_API_URL;
   const BASE_URL = API_URL ? API_URL.replace('/api/v1', '') : '';
 
@@ -100,14 +98,13 @@ const ProdukList = () => {
 
   const getProductPrice = (variants) => {
     if (!variants || variants.length === 0) return 0;
-    return variants[0].price;
+    const prices = variants.map((v) => v.price);
+    return Math.min(...prices);
   };
 
-  // Helper untuk mendapatkan URL thumbnail
   const getProductThumbnail = (variants) => {
     if (!variants || variants.length === 0) return null;
     
-    // Cari gambar dari varian pertama yang memiliki gambar
     for (const variant of variants) {
       if (variant.images && variant.images.length > 0) {
         return variant.images[0].image_url;
@@ -136,7 +133,6 @@ const ProdukList = () => {
           <table className="min-w-full divide-y divide-border-main">
             <thead className="bg-gray-50">
               <tr>
-                 {/* KOLOM BARU: Gambar */}
                 <th
                   scope="col"
                   className="px-6 py-4 text-left text-xs font-semibold text-text-muted uppercase tracking-wider"
@@ -214,7 +210,6 @@ const ProdukList = () => {
                       key={product.id}
                       className="hover:bg-gray-50 transition-colors duration-150"
                     >
-                      {/* ISI KOLOM GAMBAR */}
                       <td className="px-6 py-4 whitespace-nowrap">
                         {thumbUrl ? (
                           <img 

@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
-import { Minus, Plus, Star } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
+import { Minus, Plus, Star, ShoppingCart, Image as ImageIcon } from 'lucide-react';
+import { useProduk } from '../hooks/useProduct';
+import { toast } from 'react-hot-toast';
 
-// Fungsi helper (bisa juga diimpor dari file util)
 const formatCurrency = (amount) => {
   return new Intl.NumberFormat('id-ID', {
     style: 'currency',
@@ -11,80 +12,148 @@ const formatCurrency = (amount) => {
   }).format(amount);
 };
 
-// Data dummy untuk satu produk
-const product = {
-  id: 1,
-  name: 'Tenda Dome Pro 4P',
-  price: 1200000,
-  description: 'Tenda dome profesional dengan kapasitas 4 orang, dirancang untuk cuaca ekstrem. Dilengkapi frame aluminium yang ringan namun kokoh dan bahan flysheet waterproof 5000mm.',
-  rating: 4.5,
-  reviews: 32,
-};
-
 const ProductDetails = () => {
+  const { id } = useParams();
+  const { products, loading } = useProduk();
+  
+  const [product, setProduct] = useState(null);
   const [quantity, setQuantity] = useState(1);
+  const [selectedVariant, setSelectedVariant] = useState(null);
+  const [mainImage, setMainImage] = useState(null);
+
+  // Perbaikan logika BASE_URL: Pastikan tidak ada double slash atau missing slash
+  const API_URL = import.meta.env.VITE_API_URL;
+  const BASE_URL = API_URL ? API_URL.replace('/api/v1', '') : '';
+
+  // Helper function untuk membangun URL gambar yang benar
+  const getFullImageUrl = (path) => {
+    if (!path) return null;
+    if (path.startsWith('http')) return path; // Jika sudah URL lengkap
+    
+    // Pastikan ada satu '/' di antara BASE_URL dan path
+    const cleanBase = BASE_URL.endsWith('/') ? BASE_URL.slice(0, -1) : BASE_URL;
+    const cleanPath = path.startsWith('/') ? path : `/${path}`;
+    return `${cleanBase}${cleanPath}`;
+  };
+
+  useEffect(() => {
+    if (products.length > 0) {
+      const found = products.find((p) => String(p.id) === id);
+      if (found) {
+        setProduct(found);
+        if (found.variants && found.variants.length > 0) {
+          setSelectedVariant(found.variants[0]);
+          if (found.variants[0].images && found.variants[0].images.length > 0) {
+            // Set path gambar (string)
+            setMainImage(found.variants[0].images[0].image_url);
+          }
+        }
+      }
+    }
+  }, [id, products]);
 
   const handleQuantityChange = (amount) => {
     setQuantity((prev) => Math.max(1, prev + amount));
   };
 
+  if (loading) return <div className="py-20 text-center">Memuat produk...</div>;
+  if (!product) return <div className="py-20 text-center">Produk tidak ditemukan</div>;
+
   return (
-    <div className="bg-content-bg py-12 md:py-16">
+    <div className="bg-content-bg py-12">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
           
-          {/* Kolom Gambar Produk */}
-          <div className="bg-zinc-100 border border-border-main rounded-lg flex items-center justify-center aspect-square">
-            <span className="text-text-muted">[Placeholder Gambar Produk]</span>
+          {/* Kolom Gambar & Galeri */}
+          <div className="space-y-4">
+            <div className="bg-zinc-100 border border-border-main rounded-xl overflow-hidden aspect-square flex items-center justify-center">
+              {mainImage ? (
+                <img 
+                  src={getFullImageUrl(mainImage)}
+                  alt={product.name} 
+                  className="w-full h-full object-fill"
+                  onError={(e) => {
+                    console.error("Gagal memuat gambar:", getFullImageUrl(mainImage));
+                    e.target.src = 'https://via.placeholder.com/400?text=Gambar+Rusak';
+                  }}
+                />
+              ) : (
+                <ImageIcon size={64} className="text-zinc-300" />
+              )}
+            </div>
           </div>
 
           {/* Kolom Info Produk */}
-          <div className="flex flex-col justify-center">
-            <h1 className="text-3xl md:text-4xl font-bold text-text-main">
+          <div className="flex flex-col">
+            <span className="text-theme-primary font-bold uppercase tracking-widest text-sm">
+              {product.category?.name || 'Outdoor Gear'}
+            </span>
+            <h1 className="text-4xl font-bold text-text-main mt-2">
               {product.name}
             </h1>
             
-            <div className="flex items-center gap-2 mt-3">
-              <div className="flex text-yellow-500">
-                <Star size={18} fill="currentColor" />
-                <Star size={18} fill="currentColor" />
-                <Star size={18} fill="currentColor" />
-                <Star size={18} fill="currentColor" />
-                <Star size={18} fill="currentColor" className="opacity-50" />
-              </div>
-              <span className="text-sm text-text-muted">({product.reviews} ulasan)</span>
-            </div>
-
-            <p className="text-3xl font-medium text-theme-primary-dark mt-4">
-              {formatCurrency(product.price)}
+            <p className="text-3xl font-bold text-theme-primary-dark mt-6">
+              {formatCurrency(selectedVariant?.price || 0)}
             </p>
 
-            <p className="text-base text-text-muted mt-6 leading-relaxed">
+            <div className="mt-8">
+              <h4 className="font-semibold text-text-main mb-3">Pilih Varian:</h4>
+              <div className="flex flex-wrap gap-2">
+                {product.variants?.map((v) => (
+                  <button
+                    key={v.id}
+                    onClick={() => {
+                      setSelectedVariant(v);
+                      if (v.images?.length > 0) {
+                        setMainImage(v.images[0].image_url);
+                      }
+                    }}
+                    className={`px-4 py-2 rounded-md border-2 text-sm transition-all 
+                      ${selectedVariant?.id === v.id 
+                        ? 'border-theme-primary bg-theme-primary-light text-theme-primary-dark font-bold' 
+                        : 'border-border-main hover:border-zinc-400'}`}
+                  >
+                    {v.color} / {v.size}
+                  </button>
+                ))}
+              </div>
+              <p className="text-sm text-text-muted mt-2 font-medium">
+                Stok: {selectedVariant?.stock || 0}
+              </p>
+            </div>
+
+            <p className="text-base text-text-muted mt-8 leading-relaxed">
               {product.description}
             </p>
             
             <hr className="border-border-main my-8" />
 
-            {/* Aksi */}
             <div className="flex flex-col sm:flex-row gap-4">
-              <div className="flex items-center border border-border-main rounded-lg w-min">
+              {/* Input Quantity */}
+              <div className="flex items-center border border-border-main rounded-lg w-min bg-white">
                 <button 
-                  onClick={() => handleQuantityChange(-1)}
-                  className="p-3 text-text-muted hover:text-text-main"
+                  onClick={() => handleQuantityChange(-1)} 
+                  className="p-4 hover:text-theme-primary transition-colors"
                 >
-                  <Minus size={16} />
+                  <Minus size={18} />
                 </button>
-                <span className="px-4 font-medium">{quantity}</span>
+                <span className="px-4 font-bold text-lg">{quantity}</span>
                 <button 
-                  onClick={() => handleQuantityChange(1)}
-                  className="p-3 text-text-muted hover:text-text-main"
+                  onClick={() => handleQuantityChange(1)} 
+                  className="p-4 hover:text-theme-primary transition-colors"
                 >
-                  <Plus size={16} />
+                  <Plus size={18} />
                 </button>
               </div>
 
-              <button className="flex-1 bg-theme-primary text-white font-medium py-3 px-8 rounded-lg shadow-md hover:bg-theme-primary-dark transition-all">
-                Tambah ke Keranjang
+              <button 
+                className="flex-1 bg-theme-primary text-white font-bold py-4 px-8 rounded-lg shadow-lg 
+                         hover:bg-theme-primary-dark transition-all flex items-center justify-center gap-2 
+                         disabled:bg-zinc-300 disabled:cursor-not-allowed"
+                disabled={!selectedVariant || selectedVariant.stock === 0}
+              >
+                <ShoppingCart size={20} />
+                {selectedVariant?.stock > 0 ? 'Tambah ke Keranjang' : 'Stok Habis'}
               </button>
             </div>
           </div>

@@ -1,15 +1,9 @@
 import React from 'react';
-
-// Data filter (bisa didapat dari API nanti)
-const categories = [
-  { id: 'tenda', name: 'Tenda' },
-  { id: 'tas', name: 'Tas' }, // 'Tas' cocok dengan data dummy
-  { id: 'sepatu', name: 'Sepatu' }, // 'Sepatu' cocok dengan data dummy
-  { id: 'alat_masak', name: 'Alat Masak' }, // 'Alat Masak' cocok dengan data dummy
-  { id: 'alat_tidur', name: 'Alat Tidur' }, // 'Alat Tidur' cocok dengan data dummy
-];
+import { useKategori } from '../../hooks/useKategori';
 
 const ProductFilter = ({ selectedCategories, onCategoryChange, onResetFilters }) => {
+  // Ambil data kategori dari hook
+  const { categories, loading } = useKategori();
   
   const handleCheckboxChange = (e) => {
     const { value, checked } = e.target;
@@ -33,27 +27,24 @@ const ProductFilter = ({ selectedCategories, onCategoryChange, onResetFilters })
         <div>
           <h4 className="font-semibold text-text-main mb-3">Kategori</h4>
           <div className="space-y-2">
-            {categories.map((category) => (
-              <label key={category.id} className="flex items-center space-x-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  value={category.name} // Filter berdasarkan nama kategori
-                  checked={selectedCategories.includes(category.name)}
-                  onChange={handleCheckboxChange}
-                  className="rounded border-border-main text-theme-primary focus:ring-theme-primary"
-                />
-                <span className="text-sm text-text-muted">{category.name}</span>
-              </label>
-            ))}
+            {loading ? (
+              <p className="text-sm text-text-muted">Memuat kategori...</p>
+            ) : (
+              categories.map((category) => (
+                <label key={category.id} className="flex items-center space-x-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    value={category.name} 
+                    checked={selectedCategories.includes(category.name)}
+                    onChange={handleCheckboxChange}
+                    className="rounded border-border-main text-theme-primary focus:ring-theme-primary"
+                  />
+                  <span className="text-sm text-text-muted">{category.name}</span>
+                </label>
+              ))
+            )}
           </div>
         </div>
-        
-        {/* Anda bisa menambahkan filter lain di sini, misal:
-        <div className="mt-6 border-t border-border-main pt-4">
-          <h4 className="font-semibold text-text-main mb-3">Rentang Harga</h4>
-          ...
-        </div>
-        */}
       </div>
     </aside>
   );

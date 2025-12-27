@@ -1,34 +1,36 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+
+// Import gambar dari folder assets
+import HeroCarousel1 from "../../assets/hero-carousel-1.png";
+import HeroCarousel2 from "../../assets/hero-carousel-2.png";
+import HeroCarousel3 from "../../assets/hero-carousel-3.png";
 
 const slides = [
   {
     id: 1,
-    title: 'Peralatan Panjat & Outdoor Terbaik',
-    description: 'Temukan perlengkapan berkualitas tinggi untuk petualangan Anda berikutnya.',
-    ctaText: 'Belanja Sekarang',
-    ctaLink: '/shop',
-    // 1. URL gambar background untuk slide ini
-    backgroundImage: 'https://images.unsplash.com/photo-1549877452-f17257912b77?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+    title: "Peralatan Panjat & Outdoor Terbaik",
+    description: "Temukan perlengkapan berkualitas tinggi untuk petualangan Anda berikutnya.",
+    ctaText: "Belanja Sekarang",
+    ctaLink: "/shop",
+    backgroundImage: HeroCarousel1,
   },
   {
     id: 2,
-    title: 'Diskon Musim Ini, Siap Untuk Petualangan Baru!',
-    description: 'Diskon hingga 30% untuk semua tenda dan perlengkapan hiking pilihan.',
-    ctaText: 'Lihat Promo',
-    ctaLink: '/shop?promo=tenda',
-    // 1. URL gambar background untuk slide ini
-    backgroundImage: 'https://images.unsplash.com/photo-1542382600-ad5417852c03?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+    title: "Diskon Musim Ini, Siap Untuk Petualangan Baru!",
+    description: "Diskon hingga 30% untuk semua tenda dan perlengkapan hiking pilihan.",
+    ctaText: "Lihat Promo",
+    ctaLink: "/shop?promo=tenda",
+    backgroundImage: HeroCarousel2,
   },
   {
     id: 3,
-    title: 'Koleksi Terbaru Sepatu Gunung',
-    description: 'Dapatkan daya cengkeram dan kenyamanan maksimal di medan terjal.',
-    ctaText: 'Jelajahi Sepatu',
-    ctaLink: '/shop?category=sepatu',
-    // 1. URL gambar background untuk slide ini
-    backgroundImage: 'https://images.unsplash.com/photo-1579547621113-e4bb164101e4?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+    title: "Koleksi Terbaru Sepatu Gunung",
+    description: "Dapatkan daya cengkeram dan kenyamanan maksimal di medan terjal.",
+    ctaText: "Jelajahi Sepatu",
+    ctaLink: "/shop?category=sepatu",
+    backgroundImage: HeroCarousel3,
   },
 ];
 
@@ -50,29 +52,27 @@ const HeroSection = () => {
   useEffect(() => {
     const slideInterval = setInterval(() => {
       setCurrentSlide((curr) => (curr === slides.length - 1 ? 0 : curr + 1));
-    }, 5000); // Ganti slide setiap 5 detik
+    }, 5000);
 
     return () => clearInterval(slideInterval);
   }, [slides.length]);
 
   return (
     <section className="relative w-full h-[60vh] md:h-[75vh] lg:h-[85vh] overflow-hidden">
-      {/* 2. Kontainer untuk semua slide */}
       <div
         className="flex h-full transition-transform ease-out duration-700"
         style={{ transform: `translateX(-${currentSlide * 100}%)` }}
       >
-        {/* 3. Render setiap slide sebagai background image */}
         {slides.map((slide) => (
           <div
             key={slide.id}
-            className="w-full flex-shrink-0 h-full bg-cover bg-center relative" // Styling background
+            className="w-full flex-shrink-0 h-full bg-cover bg-center relative"
             style={{ backgroundImage: `url(${slide.backgroundImage})` }}
           >
-            {/* Overlay gelap untuk visibilitas teks */}
-            <div className="absolute inset-0 bg-black bg-opacity-40"></div> 
+            {/* Overlay gelap */}
+            <div className="absolute inset-0 bg-black/20 bg-opacity-40"></div>
 
-            {/* Konten Teks di atas overlay */}
+            {/* Konten Teks */}
             <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center justify-center text-center">
               <div className="text-white max-w-3xl">
                 <h1 className="text-4xl md:text-6xl font-extrabold mb-4 leading-tight drop-shadow-lg">
@@ -93,7 +93,7 @@ const HeroSection = () => {
         ))}
       </div>
 
-      {/* 4. Tombol Navigasi (Kiri/Kanan) */}
+      {/* Navigasi Kiri */}
       <button
         onClick={prevSlide}
         className="absolute top-1/2 left-4 md:left-8 -translate-y-1/2 z-20 p-3 bg-white/30 rounded-full text-white hover:bg-white/50 transition-all shadow-md backdrop-blur-sm"
@@ -101,6 +101,8 @@ const HeroSection = () => {
       >
         <ChevronLeft size={28} />
       </button>
+
+      {/* Navigasi Kanan */}
       <button
         onClick={nextSlide}
         className="absolute top-1/2 right-4 md:right-8 -translate-y-1/2 z-20 p-3 bg-white/30 rounded-full text-white hover:bg-white/50 transition-all shadow-md backdrop-blur-sm"
@@ -109,14 +111,14 @@ const HeroSection = () => {
         <ChevronRight size={28} />
       </button>
 
-      {/* 5. Indikator Titik (Dots) */}
+      {/* Indikator Dots */}
       <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex space-x-2">
         {slides.map((_, index) => (
           <button
             key={index}
             onClick={() => goToSlide(index)}
             className={`w-3 h-3 rounded-full transition-all duration-300 ${
-              currentSlide === index ? 'bg-white scale-125' : 'bg-gray-400 hover:bg-white/70'
+              currentSlide === index ? "bg-white scale-125" : "bg-gray-400 hover:bg-white/70"
             } border border-gray-300`}
             aria-label={`Go to slide ${index + 1}`}
           />
