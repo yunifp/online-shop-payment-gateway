@@ -4,35 +4,36 @@ const {
   User,
   Carts,
   Address,
-  Products_Variant, // <-- NAMA MODEL YANG BENAR
-  Voucher,
+  Products_Variant,
   Products,
   Transaction,
   TransactionDetail,
 } = require("../models");
-const MidtransService = require("./midtransService"); // <-- Impor CLASS
+const MidtransService = require("./midtransService");
+const midtransService = new MidtransService();
 const whatsappService = require("./whatsappService");
-const emailService = require("./emailService");
-const rajaOngkirService = require("./rajaOngkirService");
-const shopAddressRepository = require("../repositories/shopAddressRepository");
-const midtransService = new MidtransService(); // <-- Inisialisasi INSTANCE
+// const rajaOngkirService = require("./rajaOngkirService"); // Tidak butuh lagi untuk booking
+
 
 class TransactionService {
   _generateOrderId() {
     return `TRX-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
   }
 
+  // =================================================================
+  // 1. CREATE TRANSACTION (CHECKOUT)
+  // =================================================================
   async createTransaction(userId, checkoutData) {
     const {
       voucher_code,
-      shipping_code, // Contoh input: "wahana" (KURIR)
-      shipping_service, // Contoh input: "Express" (LAYANAN)
-      shipping_cost, // Contoh input: 15000
+      shipping_code, // e.g. "wahana"
+      shipping_service, // e.g. "Express"
+      shipping_cost, // e.g. 15000
     } = checkoutData;
 
     const t = await sequelize.transaction();
     try {
-      // 1. Kunci data user & ambil keranjang
+      // A. Ambil Data User & Keranjang
       const user = await User.findByPk(userId, {
         include: [
           {
@@ -55,17 +56,14 @@ class TransactionService {
         throw new Error("Keranjang Anda kosong.");
       }
 
-      // 2. Filter Item Valid & Hitung Subtotal Produk
+      // B. Validasi Stok & Hitung Harga
       const validItems = [];
       let subtotal_items = 0;
-      let midtransItemDetails = [];
 
       for (const item of user.cart_items) {
         const variant = item.variant;
-
         if (!variant) continue;
 
-        // Cek stok
         const lockedVariant = await Products_Variant.findByPk(variant.id, {
           transaction: t,
           lock: t.LOCK.UPDATE,
@@ -77,46 +75,25 @@ class TransactionService {
         }
 
         validItems.push(item);
-
-        // Hitung Subtotal per Item
-        const itemTotal = item.quantity * variant.price;
-        subtotal_items += itemTotal;
-
-        // Siapkan item untuk Midtrans (Opsional)
-        midtransItemDetails.push({
-          id: variant.id.toString(),
-          price: parseFloat(variant.price),
-          quantity: item.quantity,
-          name: `${variant.product.name}`.substring(0, 50),
-        });
+        subtotal_items += item.quantity * variant.price;
       }
 
       if (validItems.length === 0) throw new Error("Tidak ada item valid.");
 
-      // 3. Ambil Alamat
+      // C. Ambil Alamat User
       const address = await Address.findOne({ where: { user_id: userId } });
       if (!address) throw new Error("Alamat pengiriman tidak ditemukan.");
       const shippingAddressSnapshot = JSON.stringify(address);
 
-      // 4. Hitung Komponen Biaya (FIXED LOGIC)
-      // Pastikan shipping_cost menjadi integer/float, jangan string
+      // D. Kalkulasi Biaya
       const parsedShippingCost = parseFloat(shipping_cost) || 0;
+      const parsedServiceFee = 0; // Manual, jadi tidak ada fee sistem otomatis
+      const discountAmount = 0;
 
-      // Sesuai dokumentasi Komerce:
-      // Untuk BANK TRANSFER, service_fee = 0.
-      const parsedServiceFee = 0;
-
-      let discountAmount = 0;
-      if (voucher_code) {
-        // (Logika voucher...)
-      }
-
-      // 5. Hitung Grand Total
-      // Rumus: Produk + Ongkir + Service Fee - Diskon
       const grandTotalValue =
         subtotal_items + parsedShippingCost + parsedServiceFee - discountAmount;
 
-      // 6. Buat Transaksi (FIXED MAPPING)
+      // E. Simpan Transaksi ke DB
       const orderId = this._generateOrderId();
 
       const newTransaction = await Transaction.create(
@@ -125,82 +102,83 @@ class TransactionService {
           user_id: userId,
 
           total_price: subtotal_items,
-          shipping_cost: parsedShippingCost, // Pastikan tersimpan
+          shipping_cost: parsedShippingCost,
           service_fee: parsedServiceFee,
           discount_amount: discountAmount,
           grand_total: grandTotalValue,
 
           shipping_address: shippingAddressSnapshot,
 
-          // PERBAIKAN UTAMA DI SINI:
-          courier: shipping_code, // Isi: "wahana" (bukan "Express")
-          shipping_service: shipping_service, // Isi: "Express"
-          shipping_code: shipping_code, // (Redundan jika ada kolom courier, tapi aman disamakan)
+          courier: shipping_code,
+          shipping_service: shipping_service,
+          shipping_code: shipping_code,
 
           status: "pending",
-
-          // PERBAIKAN PAYMENT METHOD:
-          // Default ke "BANK TRANSFER" agar sesuai Komerce (Non-COD)
           payment_method: "BANK TRANSFER",
-
           midtrans_token: "PENDING",
         },
         { transaction: t }
       );
 
-      // 7. Simpan Detail Item
-      let detailsToCreate = [];
-      let stockUpdates = [];
-
+      // F. Simpan Detail Item & Kurangi Stok
       for (const item of validItems) {
         const variant = item.variant;
-        detailsToCreate.push({
-          transaction_id: newTransaction.id,
-          variant_id: variant.id,
-          quantity: item.quantity,
-          price_at_purchase: variant.price,
-          weight_at_purchase_grams: variant.product.weight_grams,
-          product_snapshot: JSON.stringify(variant),
-        });
 
-        stockUpdates.push(
-          Products_Variant.decrement("stock", {
-            by: item.quantity,
-            where: { id: variant.id },
-            transaction: t,
-          })
+        await TransactionDetail.create(
+          {
+            transaction_id: newTransaction.id,
+            variant_id: variant.id,
+            quantity: item.quantity,
+            price_at_purchase: variant.price,
+            weight_at_purchase_grams: variant.product.weight_grams,
+            product_snapshot: JSON.stringify(variant),
+          },
+          { transaction: t }
         );
+
+        await Products_Variant.decrement("stock", {
+          by: item.quantity,
+          where: { id: variant.id },
+          transaction: t,
+        });
       }
 
-      await TransactionDetail.bulkCreate(detailsToCreate, { transaction: t });
-      await Promise.all(stockUpdates);
       await Carts.destroy({ where: { user_id: userId }, transaction: t });
 
-      // 8. Integrasi Midtrans (Opsional, untuk token pembayaran)
-      // Tambahkan item ongkir ke Midtrans agar totalnya match Grand Total
-      midtransItemDetails.push({
-        id: "SHIP",
-        price: parsedShippingCost,
-        quantity: 1,
-        name: "Shipping Cost",
-      });
-
-      /* Di sini Anda bisa panggil midtransService.createTransaction 
-         jika ingin token asli. Untuk sekarang dummy dulu agar test lancar.
-      */
-      const midtransResponse = {
-        token: `DUMMY-TOKEN-${Date.now()}`,
-        redirect_url: "https://google.com",
+      // G. Integrasi Midtrans (Dummy)
+      const midtransParams = {
+        transaction_details: {
+          order_id: orderId,
+          gross_amount: Math.round(grandTotalValue), // Midtrans menolak desimal
+        },
+        customer_details: {
+          first_name: user.name,
+          email: user.email,
+          phone: user.phone_number,
+        },
+        item_details: [
+          // Opsional: Bisa dikosongkan jika ribet, tapi bagus kalau ada
+          {
+            id: "TRX-TOTAL",
+            price: Math.round(grandTotalValue),
+            quantity: 1,
+            name: "Total Pembayaran Order",
+          },
+        ],
       };
 
+      // Minta Link ke Midtrans
+      const midtransResponse = await midtransService.createTransaction(
+        midtransParams
+      );
+
+      // Simpan Token ke DB
       await newTransaction.update(
         { midtrans_token: midtransResponse.token },
         { transaction: t }
       );
 
       await t.commit();
-
-      // ... (Bagian Notifikasi WA Admin tetap sama) ...
 
       return {
         transaction: newTransaction,
@@ -212,96 +190,196 @@ class TransactionService {
       throw new Error(`Checkout Gagal: ${error.message}`);
     }
   }
-  async updateTransactionStatus(
-    transactionId,
-    newStatus,
-    manualReceiptNumber = null
-  ) {
+  async handleMidtransNotification(notificationBody) {
+    try {
+      const statusResponse =
+        await midtransService.snap.transaction.notification(notificationBody);
+
+      const orderId = statusResponse.order_id;
+      const transactionStatus = statusResponse.transaction_status;
+      const fraudStatus = statusResponse.fraud_status;
+
+      console.log(`Midtrans Notif: ${orderId} => ${transactionStatus}`);
+
+      // Cari Transaksi di DB
+      const transaction = await Transaction.findOne({
+        where: { order_id_display: orderId },
+        include: [{ model: User, as: "user" }],
+      });
+
+      if (!transaction) throw new Error("Transaksi tidak ditemukan");
+
+      // Logika Update Status
+      let newStatus = transaction.status;
+
+      if (transactionStatus == "capture") {
+        if (fraudStatus == "challenge") {
+          newStatus = "pending"; // Tahan dulu
+        } else if (fraudStatus == "accept") {
+          newStatus = "paid"; // Sukses Kartu Kredit
+        }
+      } else if (transactionStatus == "settlement") {
+        newStatus = "paid"; // Sukses Bank Transfer
+      } else if (
+        transactionStatus == "cancel" ||
+        transactionStatus == "deny" ||
+        transactionStatus == "expire"
+      ) {
+        newStatus = "cancelled"; // Gagal
+      }
+
+      // Update DB jika status berubah
+      if (newStatus !== transaction.status) {
+        await transaction.update({ status: newStatus });
+
+        // Kirim WA jika sukses bayar
+        if (newStatus === "paid") {
+          const msg = `Halo Kak, pembayaran untuk order *${orderId}* telah kami terima! ✅\nKami akan segera memproses pengiriman.`;
+          await whatsappService.sendMessage(transaction.user.phone_number, msg);
+        }
+      }
+
+      return { status: "OK" };
+    } catch (error) {
+      console.error("Midtrans Notification Error:", error.message);
+      throw new Error(error.message);
+    }
+  }
+  // =================================================================
+  // 2. UPDATE STATUS (ADMIN) - MANUAL INPUT RESI ONLY
+  // =================================================================
+  async updateTransactionStatus(transactionId, newStatus, manualReceiptNumber) {
     const t = await sequelize.transaction();
     try {
-      // 1. Ambil Transaksi Lengkap (Termasuk User & Detail Barang)
+      // A. Ambil Data Transaksi
       const transaction = await Transaction.findByPk(transactionId, {
-        include: [
-          { model: User, as: "user" },
-          { model: TransactionDetail, as: "details" }, // <-- PENTING: Butuh details untuk payload Komerce
-        ],
+        include: [{ model: User, as: "user" }],
         transaction: t,
       });
 
       if (!transaction) throw new Error("Transaksi tidak ditemukan.");
 
       const updateData = { status: newStatus };
-      let finalReceiptNumber = manualReceiptNumber;
 
-      // ------------------------------------------------------------------
-      // LOGIKA AUTO RESI (Jika status SHIPPED & Admin tidak isi resi manual)
-      // ------------------------------------------------------------------
-      if (newStatus === "shipped" && !manualReceiptNumber) {
-        try {
-          // a. Ambil Alamat Toko
-          const shopAddress =
-            await shopAddressRepository.findDefaultShopAddress();
-          if (!shopAddress)
-            throw new Error(
-              "Alamat toko belum disetting, tidak bisa booking resi."
-            );
-
-          // b. Panggil Service Komerce
-          console.log(
-            `Memulai booking resi otomatis untuk Order ${transaction.order_id_display}...`
+      // B. LOGIKA RESI MANUAL
+      // Jika admin mengirimkan resi manual (lewat body request), kita simpan.
+      // Tidak ada lagi panggilan ke rajaOngkirService.
+      if (newStatus === "shipped") {
+        if (!manualReceiptNumber || manualReceiptNumber.trim() === "") {
+          throw new Error(
+            "Gagal Update: Nomor Resi WAJIB DIISI untuk status 'shipped'!"
           );
-          const autoResi = await rajaOngkirService.createShippingOrder(
-            transaction,
-            shopAddress
-          );
-
-          // c. Gunakan Resi dari API
-          finalReceiptNumber = autoResi;
-          console.log(`Resi Otomatis didapatkan: ${finalReceiptNumber}`);
-        } catch (resiError) {
-          // Opsi: Mau gagalkan update status, atau biarkan update tapi tanpa resi?
-          // Saran: Gagalkan biar admin tau ada masalah booking
-          throw new Error(`Gagal Booking Resi: ${resiError.message}`);
         }
+        updateData.shipping_receipt_number = manualReceiptNumber;
+      } else if (manualReceiptNumber) {
+        // Jika status bukan shipped tapi admin iseng isi resi (misal salah klik), simpan saja
+        updateData.shipping_receipt_number = manualReceiptNumber;
       }
 
-      // Jika ada resi (baik manual atau auto), simpan
-      if (finalReceiptNumber) {
-        updateData.shipping_receipt_number = finalReceiptNumber;
-      }
-
-      // Update DB
+      // C. Update Database
       await transaction.update(updateData, { transaction: t });
       await t.commit();
 
-      // ---------------------------------------------------------
-      // NOTIFIKASI PELANGGAN
-      // ---------------------------------------------------------
-      try {
-        const userPhone = transaction.user?.phone_number;
-        const userEmail = transaction.user?.email;
-        let messageUserWA = "";
-        let subjectEmail = "";
-        let textEmail = "";
-
-        // ... (Logika text notifikasi sama seperti sebelumnya)
-        if (newStatus === "shipped" && finalReceiptNumber) {
-          messageUserWA = `Hore! Pesanan *${transaction.order_id_display}* sudah *DIKIRIM* 🚚\nResi: ${finalReceiptNumber}\n\nCek email untuk detailnya. Terima kasih!`;
-          subjectEmail = `Pesanan ${transaction.order_id_display} Telah Dikirim`;
-          textEmail = `Barang Anda sedang dalam perjalanan. Nomor Resi: ${finalReceiptNumber}`;
-        }
-        // ... (Kirim WA & Email)
-        if (messageUserWA && userPhone)
-          whatsappService.sendMessage(userPhone, messageUserWA);
-        // ...
-      } catch (notifError) {
-        console.error("Gagal kirim notifikasi User:", notifError.message);
-      }
+      // D. Notifikasi WA (Tetap jalan menggunakan resi manual)
+      this._sendNotification(transaction, newStatus, manualReceiptNumber);
 
       return transaction;
     } catch (error) {
       await t.rollback();
       throw new Error(`Update Status Gagal: ${error.message}`);
+    }
+  }
+
+  // Helper Notifikasi
+  async _sendNotification(transaction, newStatus, receiptNumber) {
+    try {
+      const userPhone = transaction.user?.phone_number;
+
+      if (newStatus === "shipped" && receiptNumber && userPhone) {
+        const message =
+          `Halo Kak ${transaction.user.name || "Pelanggan"},\n\n` +
+          `Pesanan Anda *${transaction.order_id_display}* telah dikirim secara manual! 🚚\n` +
+          `Ekspedisi: ${(transaction.courier || "JNE").toUpperCase()}\n` +
+          `No. Resi: *${receiptNumber}*\n\n` +
+          `Terima kasih telah berbelanja di Toko Panjat Tebing!`;
+
+        await whatsappService.sendMessage(userPhone, message);
+      }
+    } catch (err) {
+      console.warn("Gagal kirim notifikasi WA:", err.message);
+    }
+  }
+  async repayTransaction(transactionId) {
+    const t = await sequelize.transaction();
+    try {
+      // 1. Ambil Data Transaksi
+      const transaction = await Transaction.findByPk(transactionId, {
+        include: [{ model: User, as: "user" }],
+        transaction: t,
+      });
+
+      if (!transaction) throw new Error("Transaksi tidak ditemukan.");
+      if (transaction.status === "paid")
+        throw new Error("Transaksi sudah dibayar.");
+      if (transaction.status === "cancelled")
+        throw new Error("Transaksi sudah dibatalkan, silakan order ulang.");
+
+      // 2. Cek Batas Waktu Absolut (48 Jam dari Checkout Awal)
+      // Jika sudah lebih dari 2 hari, tolak request token baru.
+      const timeLimit = new Date(transaction.createdAt);
+      timeLimit.setHours(timeLimit.getHours() + 48); // Tambah 48 Jam
+
+      if (new Date() > timeLimit) {
+        throw new Error(
+          "Waktu pembayaran telah habis total. Pesanan otomatis dibatalkan."
+        );
+        // Di sini nanti Cron Job yang akan membereskan statusnya jadi 'cancelled'
+      }
+
+      // 3. Buat Order ID Unik untuk Midtrans (TRX-123-retry1)
+      // Kita pakai timestamp agar unik setiap kali klik "Bayar Lagi"
+      const suffix = `-${Date.now()}`;
+      const midtransOrderId = transaction.order_id_display + suffix;
+
+      // 4. Siapkan Parameter Midtrans Baru
+      const midtransParams = {
+        transaction_details: {
+          order_id: midtransOrderId, // ID dengan buntut baru
+          gross_amount: Math.round(transaction.grand_total),
+        },
+        customer_details: {
+          first_name: transaction.user.name,
+          email: transaction.user.email,
+          phone: transaction.user.phone_number,
+        },
+        expiry: {
+          unit: "minutes",
+          duration: 1440, // Token baru valid 24 jam lagi (atau sesuaikan sisa waktu)
+        },
+      };
+
+      // 5. Minta Token ke Midtrans
+      const midtransResponse = await midtransService.createTransaction(
+        midtransParams
+      );
+
+      // 6. Update Token Baru di Database
+      await transaction.update(
+        {
+          midtrans_token: midtransResponse.token,
+        },
+        { transaction: t }
+      );
+
+      await t.commit();
+
+      return {
+        redirect_url: midtransResponse.redirect_url,
+        token: midtransResponse.token,
+      };
+    } catch (error) {
+      await t.rollback();
+      throw new Error(error.message);
     }
   }
 }

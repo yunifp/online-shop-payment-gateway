@@ -18,4 +18,9 @@ router.put(
   adminOrStaff, // Middleware proteksi tambahan
   transactionController.updateStatus
 );
+router.post(
+  "/midtrans/notification",
+  transactionController.midtransNotification
+);
+router.post("/transactions/:id/repay", transactionController.repay);
 module.exports = router;

@@ -1,4 +1,3 @@
-
 // index.js (File Utama)
 const express = require("express");
 const app = express();
@@ -8,7 +7,7 @@ const PORT = process.env.PORT || 3000;
 const responseHandler = require("./middleware/responseHandler");
 const path = require("path");
 
-const allowedOrigins = (process.env.ALLOWED_ORIGINS || "http://localhost:5173").split(",");
+const allowedOrigins = (process.env.ALLOWED_ORIGINS || "").split(",");
 const corsOptions = {
   // origin: menentukan URL mana yang boleh request
   origin: function (origin, callback) {

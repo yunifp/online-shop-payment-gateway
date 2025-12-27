@@ -21,7 +21,7 @@ class TransactionController {
   async updateStatus(req, res) {
     try {
       const { id } = req.params; // ID Transaksi
-      const { status, receipt_number } = req.body; // Input dari Admin
+      const { status, shipping_receipt_number } = req.body; // Input dari Admin
 
       if (!status) {
         return res.error("Status baru diperlukan.", 400);
@@ -45,7 +45,7 @@ class TransactionController {
       const result = await transactionService.updateTransactionStatus(
         id,
         status,
-        receipt_number
+        shipping_receipt_number
       );
 
       res.success(result, "Status transaksi berhasil diperbarui.");
@@ -53,6 +53,32 @@ class TransactionController {
       res.error(error.message, 400);
     }
   }
+  async midtransNotification(req, res) {
+    try {
+      // Tangkap data notifikasi dari Body Request
+      const notificationBody = req.body;
+
+      // Kirim ke Service untuk diproses (update status DB jadi 'paid')
+      await transactionService.handleMidtransNotification(notificationBody);
+
+      // Balas 'OK' ke Midtrans supaya mereka tau notifikasi sudah diterima
+      res.status(200).send("OK");
+    } catch (error) {
+      console.error("Midtrans Notification Controller Error:", error.message);
+      // Tetap kirim 200 agar Midtrans tidak mengirim ulang notifikasi terus-menerus
+      res.status(200).send("OK");
+    }
+  }
+  async repay(req, res) {
+    try {
+      const { id } = req.params; // ID Transaksi
+      const result = await transactionService.repayTransaction(id);
+      res.success(result, "Link pembayaran baru berhasil dibuat.");
+    } catch (error) {
+      res.error(error.message, 400);
+    }
+  }
 }
+
 
 module.exports = new TransactionController();

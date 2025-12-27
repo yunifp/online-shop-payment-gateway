@@ -313,7 +313,7 @@ class RajaOngkirService {
         transaction.payment_method.toUpperCase().includes("COD");
 
       // Sesuai Screenshot: "COD" atau "Bank Transfer"
-      const paymentMethodStr = isCOD ? "COD" : "Bank Transfer";
+      const paymentMethodStr = isCOD ? "COD" : "BANK TRANSFER";
 
       const shippingCost = parseInt(transaction.shipping_cost);
       const additionalCost = 0; // Default 0

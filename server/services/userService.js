@@ -1,4 +1,3 @@
-
 // services/userService.js
 const userRepository = require("../repositories/userRepository");
 const bcrypt = require("bcryptjs");
@@ -38,6 +37,13 @@ class UserService {
       is_email_verified: true,
     });
 
+    try {
+      const user = await userService.createUser(req.body);
+      res.success(user, "User created successfully.", 201);
+    } catch (error) {
+      res.error(error.message, 400);
+    }
+
     delete newUser.dataValues.password;
     return newUser;
   }
@@ -62,9 +68,10 @@ class UserService {
       email,
       password: hashedPassword,
       role: "customer",
-      is_email_verified: false,
+      is_email_verified: false, // (Pastikan migrasi Anda sudah ada)
     });
     await authService.sendVerificationEmail(newUser);
+    // Hapus password dari respons
     delete newUser.dataValues.password;
     return newUser;
   }
