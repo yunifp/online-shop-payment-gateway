@@ -12,6 +12,7 @@ router.use(authenticate, isVerified);
 
 // POST /api/v1/transactions/
 // Ini adalah endpoint "Checkout"
+router.get("/", adminOrStaff, transactionController.getAllTransactions);
 router.post("/", transactionController.createTransaction);
 router.put(
   "/:id/status",

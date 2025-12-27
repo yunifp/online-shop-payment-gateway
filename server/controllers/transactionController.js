@@ -2,6 +2,18 @@
 const transactionService = require("../services/transactionService");
 
 class TransactionController {
+  async getAllTransactions(req, res) {
+    try {
+      // Ambil parameter dari URL (misal: ?page=1&status=paid&search=TRX-123)
+      const queryParams = req.query;
+
+      const result = await transactionService.getAllTransactions(queryParams);
+
+      res.success(result, "Data transaksi berhasil diambil.");
+    } catch (error) {
+      res.error(error.message, 500);
+    }
+  }
   async createTransaction(req, res) {
     try {
       const userId = req.user.id;

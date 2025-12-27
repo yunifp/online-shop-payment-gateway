@@ -20,9 +20,50 @@ class TransactionService {
     return `TRX-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
   }
 
-  // =================================================================
-  // 1. CREATE TRANSACTION (CHECKOUT)
-  // =================================================================
+  async getAllTransactions(queryParams) {
+    try {
+      const { page = 1, limit = 10, status, search } = queryParams;
+      
+      const offset = (parseInt(page) - 1) * parseInt(limit);
+      const whereCondition = {};
+
+      // 1. Filter by Status (jika ada)
+      if (status) {
+        whereCondition.status = status;
+      }
+
+      // 2. Search by Order ID (jika ada)
+      if (search) {
+        whereCondition.order_id_display = { [Op.like]: `%${search}%` };
+      }
+
+      // 3. Query Database
+      const { count, rows } = await Transaction.findAndCountAll({
+        where: whereCondition,
+        include: [
+          { 
+            model: User, 
+            as: "user", 
+            attributes: ["id", "name", "email", "phone_number"] // Ambil data user penting saja
+          }
+        ],
+        limit: parseInt(limit),
+        offset: parseInt(offset),
+        order: [["createdAt", "DESC"]], // Urutkan dari yang terbaru
+      });
+
+      // 4. Return Format Pagination
+      return {
+        total_data: count,
+        total_page: Math.ceil(count / parseInt(limit)),
+        current_page: parseInt(page),
+        data: rows
+      };
+
+    } catch (error) {
+      throw new Error(`Gagal mengambil data transaksi: ${error.message}`);
+    }
+  }
   async createTransaction(userId, checkoutData) {
     const {
       voucher_code,
