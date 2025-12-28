@@ -23,5 +23,5 @@ router.post(
   "/midtrans/notification",
   transactionController.midtransNotification
 );
-router.post("/transactions/:id/repay", transactionController.repay);
+router.post("/:id/repay", transactionController.repay);
 module.exports = router;

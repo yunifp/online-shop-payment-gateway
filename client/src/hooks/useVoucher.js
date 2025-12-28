@@ -8,6 +8,7 @@ export const useVoucher = () => {
   const [error, setError] = useState(null);
   const API_URL = import.meta.env.VITE_API_URL;
 
+  // Mengambil semua voucher (Backend akan memfilter Active Only untuk Guest/User)
   const fetchVouchers = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -15,11 +16,15 @@ export const useVoucher = () => {
       const res = await axios.get(`${API_URL}/vouchers`, {
         withCredentials: true,
       });
-      setVouchers(res.data.data);
+      // Pastikan mengakses array data dengan benar sesuai format responseHandler backend
+      // Biasanya res.data.data jika pakai responseHandler standar
+      const data = res.data.data || res.data; 
+      setVouchers(Array.isArray(data) ? data : []);
     } catch (err) {
       const message = err.response?.data?.meta?.message || err.message;
       setError(message);
-      toast.error(`Gagal mengambil data: ${message}`);
+      // Jangan toast error saat fetch awal (agar tidak mengganggu UX jika user belum login/tidak ada voucher)
+      console.error(`Gagal mengambil data voucher: ${message}`);
     } finally {
       setLoading(false);
     }
@@ -29,57 +34,10 @@ export const useVoucher = () => {
     fetchVouchers();
   }, [fetchVouchers]);
 
-  const addVoucher = async (voucherData) => {
-    try {
-      await axios.post(`${API_URL}/vouchers`, voucherData, {
-        withCredentials: true,
-      });
-      toast.success('Voucher berhasil ditambahkan!');
-      fetchVouchers();
-    } catch (err) {
-      const message = err.response?.data?.meta?.message || err.message;
-      toast.error(`Gagal menambah: ${message}`);
-      throw new Error(message);
-    }
-  };
-
-  const updateVoucher = async (id, voucherData) => {
-    try {
-      await axios.put(`${API_URL}/vouchers/${id}`, voucherData, {
-        withCredentials: true,
-      });
-      toast.success('Voucher berhasil diperbarui!');
-      fetchVouchers();
-    } catch (err) {
-      const message = err.response?.data?.meta?.message || err.message;
-      toast.error(`Gagal memperbarui: ${message}`);
-      throw new Error(message);
-    }
-  };
-
-  const deleteVoucher = async (id) => {
-    if (!window.confirm('Apakah Anda yakin ingin menghapus voucher ini?')) {
-      return;
-    }
-    
-    try {
-      await axios.delete(`${API_URL}/vouchers/${id}`, {
-        withCredentials: true,
-      });
-      toast.success('Voucher berhasil dihapus!');
-      fetchVouchers();
-    } catch (err) {
-      const message = err.response?.data?.meta?.message || err.message;
-      toast.error(`Gagal menghapus: ${message}`);
-    }
-  };
-
   return {
     vouchers,
     loading,
     error,
-    addVoucher,
-    updateVoucher,
-    deleteVoucher,
+    refreshVouchers: fetchVouchers
   };
 };

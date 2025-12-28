@@ -31,12 +31,12 @@ const FeaturedCategories = () => {
               to={`/product?category=${encodeURIComponent(category.name)}`} 
               className="group"
             >
-              <div className="bg-zinc-100 p-8 rounded-lg flex flex-col items-center justify-center aspect-square border border-border-main
+              <div className="bg-theme-primary text-white hover:text-text-main  p-8 rounded-lg flex flex-col items-center justify-center aspect-square border border-border-main
                           transition-all duration-300 group-hover:shadow-lg group-hover:bg-white group-hover:-translate-y-1">
-                <div className="text-theme-primary-dark mb-4">
+                <div className=" mb-4">
                   {getCategoryIcon(category.name)}
                 </div>
-                <h3 className="text-lg font-semibold text-text-main text-center">
+                <h3 className="text-lg font-semibold  text-center">
                   {category.name}
                 </h3>
               </div>

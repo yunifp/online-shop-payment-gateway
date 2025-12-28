@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { LogIn, Mail, Lock } from 'lucide-react';
 import logo from '../../assets/logo.jpg';
@@ -6,22 +6,42 @@ import AuthImage from '../../components/auth/AuthImage';
 import useAuth from '../../hooks/useAuth';
 
 const Login = () => {
-
-  const { login, loading } = useAuth();
+  const { login, loading, redirectByRole } = useAuth();
   const navigate = useNavigate();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
+  // Cek jika user sudah login saat komponen dimuat
+  useEffect(() => {
+    const userString = localStorage.getItem("user");
+    if (userString) {
+      const user = JSON.parse(userString);
+      redirectByRole(user.role);
+    }
+  }, [redirectByRole]);
 
   const imageUrl = "https://images.pexels.com/photos/16824426/pexels-photo-16824426.jpeg?cs=srgb&dl=pexels-mohamed-hamdi-510308652-16824426.jpg&fm=jpg";
 
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      await login(email, password);
-      navigate('/admin');
+      const res = await login(email, password);
+      
+    
+      const userRole = res?.data?.user?.role; 
+      
+      if (userRole === "customer") {
+        navigate('/customer/pesanan');
+      } else if (["admin", "staff"].includes(userRole)) {
+        navigate('/admin');
+      } else {
+        navigate('/');
+      }
+
     } catch (err) {
-      alert(err);
+      // Tampilkan error yang lebih user-friendly jika ada
+      alert(err.response?.data?.message || "Login gagal. Silakan coba lagi.");
     }
   };
 
@@ -39,25 +59,34 @@ const Login = () => {
           <form className="space-y-5" onSubmit={handleLogin}>
             <div className="relative">
               <span className="absolute left-4 top-1/2 -translate-y-1/2 text-text-subtle"><Mail size={20} /></span>
-              <input type="email" placeholder="Email"
+              <input 
+                type="email" 
+                placeholder="Email"
+                required
                 className="w-full pl-12 pr-4 py-3 rounded-lg border border-border-main bg-zinc-50 focus:outline-none focus:border-theme-primary focus:ring-1 focus:ring-theme-primary"
-                value={email} onChange={(e)=>setEmail(e.target.value)}
+                value={email} 
+                onChange={(e) => setEmail(e.target.value)}
               />
             </div>
 
             <div className="relative">
               <span className="absolute left-4 top-1/2 -translate-y-1/2 text-text-subtle"><Lock size={20} /></span>
-              <input type="password" placeholder="Password"
+              <input 
+                type="password" 
+                placeholder="Password"
+                required
                 className="w-full pl-12 pr-4 py-3 rounded-lg border border-border-main bg-zinc-50 focus:outline-none focus:border-theme-primary focus:ring-1 focus:ring-theme-primary"
-                value={password} onChange={(e)=>setPassword(e.target.value)}
+                value={password} 
+                onChange={(e) => setPassword(e.target.value)}
               />
             </div>
 
             <div className="text-right">
-              <Link to="/lupa-password" className="text-sm font-medium text-theme-primary-dark hover:underline">Lupa password?</Link>
+              <Link to="/forgot-password" size={18} className="text-sm font-medium text-theme-primary-dark hover:underline">Lupa password?</Link>
             </div>
 
-            <button type="submit"
+            <button 
+              type="submit"
               className="w-full flex items-center justify-center bg-theme-primary text-white font-medium py-3 px-6 rounded-lg shadow-md hover:bg-theme-primary-dark transition-all duration-300 transform hover:-translate-y-0.5"
               disabled={loading}
             >
@@ -66,7 +95,9 @@ const Login = () => {
             </button>
           </form>
 
-          <p className="text-center text-text-muted mt-8">Belum punya akun? <Link to="/register" className="font-medium text-theme-primary-dark hover:underline">Daftar di sini</Link></p>
+          <p className="text-center text-text-muted mt-8">
+            Belum punya akun? <Link to="/register" className="font-medium text-theme-primary-dark hover:underline">Daftar di sini</Link>
+          </p>
         </div>
       </div>
     </div>
