@@ -11,7 +11,7 @@ const formatCurrency = (amount) => {
 };
 
 const Pesanan = () => {
-  const { transactions, loading, fetchTransactions, } = useTransaction();
+  const { transactions, loading, fetchMyTransactions, } = useTransaction();
   const [activeTab, setActiveTab] = useState('pending');
   const [isModalOpen, setModalOpen] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState(null);
@@ -26,8 +26,8 @@ const Pesanan = () => {
   ];
 
   useEffect(() => {
-    fetchTransactions({ status: activeTab, limit: 50 });
-  }, [activeTab, fetchTransactions]);
+    fetchMyTransactions({ status: activeTab, limit: 50 });
+  }, [activeTab, fetchMyTransactions]);
 
   const handleRowClick = (transaction) => {
     setSelectedTransaction(transaction);

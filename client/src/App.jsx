@@ -27,6 +27,7 @@ import Voucher from "./pages/admin/Voucher";
 import Pengiriman from "./pages/admin/Pengiriman";
 import UserManagement from "./pages/admin/UserManagement";
 import RiwayatTransaksi from "./pages/admin/Pesanan";
+import RiwayatTransaksiCustomer from "./pages/customer/Pesanan"
 
 // Customer Pages
 import CompleteProfile from "./pages/customer/CompleteProfile";
@@ -102,7 +103,7 @@ function App() {
       >
         <Route index element={<Navigate to="profil" replace />} />
         <Route path="profil" element={<CustomerProfile />} />
-        <Route path="pesanan" element={<RiwayatTransaksi />} />
+        <Route path="pesanan" element={<RiwayatTransaksiCustomer />} />
         <Route path="pengiriman" element={<Pengiriman />} />
       </Route>
 

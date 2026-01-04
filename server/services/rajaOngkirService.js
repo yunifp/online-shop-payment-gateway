@@ -4,12 +4,14 @@ const cartRepository = require("../repositories/cartRepository");
 const shopAddressRepository = require("../repositories/shopAddressRepository");
 const { Products_Variant, Address, Carts, Products } = require("../models");
 // 1. Buat instance axios untuk API Komerce
+
 // Perhatikan baseURL BARU
 const komerceApi = axios.create({
   baseURL: "https://rajaongkir.komerce.id/api/v1",
   headers: {
     // MARI KITA COBA 'x-api-key'. INI STANDAR UMUM.
-    "Key": process.env.KOMERCE_API_KEY,
+    key: process.env.KOMERCE_API_KEY,
+    "Content-Type": "application/x-www-form-urlencoded",
   },
 });
 const komerceOrder = axios.create({

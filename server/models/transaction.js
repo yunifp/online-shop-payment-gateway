@@ -49,6 +49,14 @@ module.exports = (sequelize, DataTypes) => {
       },
       midtrans_token: { type: DataTypes.STRING, allowNull: false },
       payment_method: { type: DataTypes.STRING, allowNull: false },
+      tracking_data: {
+        type: DataTypes.TEXT("medium"), // Pastikan pakai TEXT atau MEDIUMTEXT
+        allowNull: true,
+      },
+      last_tracking_check: {
+        type: DataTypes.DATE,
+        allowNull: true,
+      },
     },
     {
       sequelize,
