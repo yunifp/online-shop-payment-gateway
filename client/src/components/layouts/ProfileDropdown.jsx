@@ -77,7 +77,7 @@ const ProfileDropdown = ({ isOpen, onLinkClick }) => {
               className="flex items-center w-full px-3 py-2.5 rounded-md text-sm text-text-main hover:bg-theme-primary-light hover:text-theme-primary-dark transition-colors"
             >
               <UserPlus size={16} className="mr-2" />
-              Daftar
+              Register
             </Link>
           </>
         )}

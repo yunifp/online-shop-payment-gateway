@@ -87,6 +87,14 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: false, // Misal: 'bca_va', 'gopay'
       },
+      tracking_data: {
+        type: Sequelize.TEXT("medium"),
+        allowNull: true,
+      },
+      last_tracking_check: {
+        type: Sequelize.DATE,
+        allowNull: true,
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE,

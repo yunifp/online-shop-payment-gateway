@@ -21,7 +21,7 @@ const FeaturedCategories = () => {
     <section className="bg-content-bg py-16 md:py-20">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <h2 className="text-3xl font-bold text-center text-text-main mb-12">
-          Jelajahi Kategori
+          Explore
         </h2>
         
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
@@ -50,7 +50,7 @@ const FeaturedCategories = () => {
             className="bg-theme-primary text-white font-medium py-3 px-10 rounded-lg shadow-lg 
                        hover:bg-theme-primary-dark transition-all duration-300 transform hover:-translate-y-0.5"
           >
-            Lihat Semua
+            More
           </Link>
         </div>
       </div>

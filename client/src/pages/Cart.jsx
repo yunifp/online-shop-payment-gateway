@@ -158,18 +158,18 @@ const Cart = () => {
   const finalTotal = subtotal - discountAmount;
 
   if (loading && !cart) {
-    return <div className="bg-app-bg min-h-screen py-12 flex items-center justify-center">Memuat...</div>;
+    return <div className="bg-app-bg min-h-screen py-12 flex items-center justify-center">Loading...</div>;
   }
 
   return (
     <div className="bg-app-bg min-h-screen py-12">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <h1 className="text-4xl font-bold text-text-main mb-8">Keranjang Anda</h1>
+        <h1 className="text-4xl font-bold text-text-main mb-8">Your Cart</h1>
 
         {cartItems.length === 0 ? (
           <div className="text-center bg-content-bg p-12 border border-border-main rounded-lg shadow-sm">
             <ShoppingBag size={64} className="mx-auto text-zinc-300 mb-4" />
-            <p className="text-xl font-medium text-text-main">Keranjang Anda kosong</p>
+            <p className="text-xl font-medium text-text-main">Your Cart is Empty</p>
             <Link to="/product" className="inline-block mt-6 bg-theme-primary text-white font-medium py-3 px-8 rounded-lg shadow-md hover:bg-theme-primary-dark">Belanja Sekarang</Link>
           </div>
         ) : (
@@ -195,7 +195,7 @@ const Cart = () => {
                       <div className="flex-1 flex flex-col justify-between">
                         <div>
                           <h3 className="text-lg font-bold text-text-main">{item.product_name}</h3>
-                          {item.variant_name && <p className="text-sm text-zinc-500 mt-1">Varian: {item.variant_name}</p>}
+                          {item.variant_name && <p className="text-sm text-zinc-500 mt-1">Variant: {item.variant_name}</p>}
                         </div>
                         <p className="text-theme-primary font-bold mt-2">{formatCurrency(item.price)}</p>
                       </div>
@@ -221,14 +221,14 @@ const Cart = () => {
 
                 <div className="space-y-4 text-zinc-600">
                   <div className="flex justify-between">
-                    <span>Subtotal Produk</span>
+                    <span>Subtotal Product</span>
                     <span className="font-medium text-text-main">{formatCurrency(subtotal)}</span>
                   </div>
 
                   <div className="border-t border-b border-dashed border-zinc-300 py-4 my-2">
                     <div className="flex items-center gap-2 mb-3 text-sm font-semibold text-text-main">
                       <TicketPercent size={18} className="text-theme-primary" />
-                      <span>Kode Voucher</span>
+                      <span>Code Voucher</span>
                     </div>
 
                     {!appliedVoucher ? (
@@ -284,7 +284,7 @@ const Cart = () => {
                           <div>
                             <div className="flex items-center gap-2">
                               <p className="text-sm font-bold text-green-700 uppercase">{appliedVoucher.code}</p>
-                              <span className="bg-green-200 text-green-800 text-[10px] px-1.5 rounded font-bold">DIPAKAI</span>
+                              <span className="bg-green-200 text-green-800 text-[10px] px-1.5 rounded font-bold">APPLIED</span>
                             </div>
                             <p className="text-xs text-green-600 mt-1">Hemat {formatCurrency(discountAmount)}</p>
                           </div>
@@ -299,13 +299,13 @@ const Cart = () => {
 
                   {discountAmount > 0 && (
                     <div className="flex justify-between text-green-600">
-                      <span>Diskon Voucher</span>
+                      <span>Discount Voucher</span>
                       <span className="font-medium">- {formatCurrency(discountAmount)}</span>
                     </div>
                   )}
 
                   <div className="flex justify-between">
-                    <span>Biaya Pengiriman</span>
+                    <span>Shipping Fee</span>
                     <span className="text-green-600 font-medium text-sm bg-green-50 px-2 py-1 rounded">Gratis (Promo)</span>
                   </div>
                 </div>
@@ -313,12 +313,12 @@ const Cart = () => {
                 <hr className="border-border-main my-6" />
 
                 <div className="flex justify-between items-end mb-8">
-                  <span className="font-bold text-text-main text-lg">Total Tagihan</span>
+                  <span className="font-bold text-text-main text-lg">Total</span>
                   <span className="font-bold text-2xl text-theme-primary-dark">{formatCurrency(finalTotal)}</span>
                 </div>
 
                 <button className="w-full bg-theme-primary text-white font-bold py-4 rounded-lg shadow-lg hover:bg-theme-primary-dark flex justify-center items-center gap-2">
-                  <span>Lanjut ke Checkout</span>
+                  <span>Checkout</span>
                   <ArrowRight size={20} />
                 </button>
               </div>

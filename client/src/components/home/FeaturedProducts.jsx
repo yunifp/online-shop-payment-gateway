@@ -28,7 +28,7 @@ const FeaturedProducts = () => {
         </h2>
         {products.length === 0 ? (
           <p className="text-center text-text-subtle">
-            Belum ada produk tersedia.
+            No Product Available
           </p>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">

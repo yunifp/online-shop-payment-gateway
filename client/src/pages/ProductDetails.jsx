@@ -24,7 +24,7 @@ const ProductDetails = () => {
   const [selectedVariant, setSelectedVariant] = useState(null);
   const [mainImage, setMainImage] = useState(null);
 
-  // State untuk kontrol Modal Notifikasi
+  // Success Notification Modal State
   const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const API_URL = import.meta.env.VITE_API_URL;
@@ -53,7 +53,7 @@ const ProductDetails = () => {
     }
   }, [id, products]);
 
-  // Efek untuk auto-close modal setelah 4 detik
+  // Effect to auto-close modal after 4 seconds
   useEffect(() => {
     let timer;
     if (showSuccessModal) {
@@ -71,37 +71,36 @@ const ProductDetails = () => {
   const handleAddToCart = async () => {
     const user = localStorage.getItem("user");
     if (!user) {
-      toast.error("Silakan login terlebih dahulu");
+      toast.error("Please login first");
       navigate("/login");
       return;
     }
 
     if (!selectedVariant) {
-      toast.error("Silakan pilih varian terlebih dahulu");
+      toast.error("Please select a variant first");
       return;
     }
 
     try {
       const res = await addItem(selectedVariant.id, quantity);
       
-      // Cek respon sukses standar atau dari context yang diperbarui
       if (res?.success || res?.message || res?.meta?.code === 200 || res?.meta?.code === 201) {
-        // Tampilkan Modal Custom alih-alih toast biasa
+        // Show Custom Modal instead of regular toast
         setShowSuccessModal(true);
       }
     } catch (error) {
-      toast.error(error.response?.data?.message || "Gagal menambah ke keranjang");
+      toast.error(error.response?.data?.message || "Failed to add item to cart");
     }
   };
 
-  if (loading) return <div className="py-20 text-center">Memuat produk...</div>;
-  if (!product) return <div className="py-20 text-center">Produk tidak ditemukan</div>;
+  if (loading) return <div className="py-20 text-center">Loading product...</div>;
+  if (!product) return <div className="py-20 text-center">Product not found</div>;
 
   return (
     <div className="bg-content-bg py-12 relative h-min">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-          {/* Bagian Gambar */}
+          {/* Image Section */}
           <div className="space-y-4">
             <div className="bg-zinc-100 border border-border-main rounded-xl overflow-hidden aspect-square flex items-center justify-center relative group">
               {mainImage ? (
@@ -110,7 +109,7 @@ const ProductDetails = () => {
                   alt={product.name} 
                   className="w-full h-full object-fill transition-transform duration-500 group-hover:scale-105"
                   onError={(e) => {
-                    e.target.src = 'https://via.placeholder.com/400?text=Gambar+Rusak';
+                    e.target.src = 'https://via.placeholder.com/400?text=Broken+Image';
                   }}
                 />
               ) : (
@@ -119,7 +118,7 @@ const ProductDetails = () => {
             </div>
           </div>
 
-          {/* Bagian Detail Produk */}
+          {/* Product Details Section */}
           <div className="flex flex-col">
             <span className="text-theme-primary font-bold uppercase tracking-widest text-sm">
               {product.category?.name || 'Outdoor Gear'}
@@ -133,7 +132,7 @@ const ProductDetails = () => {
             </p>
 
             <div className="mt-8">
-              <h4 className="font-semibold text-text-main mb-3">Pilih Varian:</h4>
+              <h4 className="font-semibold text-text-main mb-3">Select Variant:</h4>
               <div className="flex flex-wrap gap-2">
                 {product.variants?.map((v) => (
                   <button
@@ -154,7 +153,7 @@ const ProductDetails = () => {
                 ))}
               </div>
               <p className="text-sm text-text-muted mt-2 font-medium">
-                Stok: {selectedVariant?.stock || 0}
+                Stock: {selectedVariant?.stock || 0}
               </p>
             </div>
 
@@ -170,6 +169,7 @@ const ProductDetails = () => {
                   onClick={() => handleQuantityChange(-1)} 
                   className="p-4 hover:text-theme-primary transition-colors"
                 >
+                  <span className="sr-only">Decrease quantity</span>
                   <Minus size={18} />
                 </button>
                 <span className="px-4 font-bold text-lg">{quantity}</span>
@@ -177,6 +177,7 @@ const ProductDetails = () => {
                   onClick={() => handleQuantityChange(1)} 
                   className="p-4 hover:text-theme-primary transition-colors"
                 >
+                  <span className="sr-only">Increase quantity</span>
                   <Plus size={18} />
                 </button>
               </div>
@@ -184,19 +185,19 @@ const ProductDetails = () => {
               <button 
                 onClick={handleAddToCart}
                 className="flex-1 bg-theme-primary text-white font-bold py-4 px-8 rounded-lg shadow-lg 
-                         hover:bg-theme-primary-dark transition-all flex items-center justify-center gap-2 
-                         disabled:bg-zinc-300 disabled:cursor-not-allowed"
+                           hover:bg-theme-primary-dark transition-all flex items-center justify-center gap-2 
+                           disabled:bg-zinc-300 disabled:cursor-not-allowed"
                 disabled={!selectedVariant || selectedVariant.stock === 0 || cartLoading}
               >
                 <ShoppingCart size={20} />
-                {cartLoading ? 'Memproses...' : (selectedVariant?.stock > 0 ? 'Tambah ke Keranjang' : 'Stok Habis')}
+                {cartLoading ? 'Processing...' : (selectedVariant?.stock > 0 ? 'Add to Cart' : 'Out of Stock')}
               </button>
             </div>
           </div>
         </div>
       </div>
 
-      {/* --- MODAL NOTIFIKASI BERHASIL (Bottom Sheet Style) --- */}
+      {/* --- SUCCESS NOTIFICATION MODAL (Bottom Sheet Style) --- */}
       <div 
         className={`fixed bottom-0 left-0 right-0 z-50 flex justify-center px-4 pb-6 pointer-events-none`}
       >
@@ -210,7 +211,7 @@ const ProductDetails = () => {
           <div className="flex items-start justify-between mb-4">
             <div className="flex items-center gap-2 text-green-600">
               <CheckCircle className="fill-green-100" size={24} />
-              <h3 className="font-bold text-lg">Berhasil Menambahkan ke Keranjang</h3>
+              <h3 className="font-bold text-lg">Successfully Added to Cart</h3>
             </div>
             <button 
               onClick={() => setShowSuccessModal(false)}
@@ -233,7 +234,7 @@ const ProductDetails = () => {
             <div>
               <p className="font-bold text-gray-800 line-clamp-1">{product.name}</p>
               <p className="text-sm text-gray-500">
-                Varian: {selectedVariant?.color} / {selectedVariant?.size}
+                Variant: {selectedVariant?.color} / {selectedVariant?.size}
               </p>
               <p className="text-sm text-gray-500 mt-1">
                 Qty: <span className="font-semibold text-gray-800">{quantity}</span>
@@ -246,12 +247,11 @@ const ProductDetails = () => {
               to="/cart"
               className="py-2.5 px-4 rounded-lg font-bold bg-theme-primary text-white hover:bg-theme-primary-dark transition-colors text-center flex items-center justify-center gap-2"
             >
-              Lihat Keranjang <ArrowRight size={16} />
+              View Cart <ArrowRight size={16} />
             </Link>
           </div>
         </div>
       </div>
-
     </div>
   );
 };

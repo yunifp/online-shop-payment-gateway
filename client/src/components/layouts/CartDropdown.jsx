@@ -34,7 +34,7 @@ const CartDropdown = ({ isOpen, items = [], subtotal = 0 }) => {
                   ${isOpen ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 -translate-y-2 pointer-events-none'}`}
     >
       <div className="p-4 border-b border-border-main flex justify-between items-center bg-gray-50/50 rounded-t-lg">
-        <h3 className="text-lg font-bold text-text-main">Keranjang Anda</h3>
+        <h3 className="text-lg font-bold text-text-main">Your Cart</h3>
         <span className="text-xs font-medium text-text-muted bg-zinc-100 px-2 py-1 rounded-full border border-zinc-200">
             {items.length} Item
         </span>
@@ -94,14 +94,14 @@ const CartDropdown = ({ isOpen, items = [], subtotal = 0 }) => {
               to="/cart"
               className="block w-full text-center bg-theme-primary text-white font-bold py-2.5 px-4 rounded-lg hover:bg-theme-primary-dark transition-all shadow-sm hover:shadow-md active:scale-[0.98]"
             >
-              Lihat Keranjang
+              View Cart
             </Link>
           </div>
         </>
       ) : (
         <div className="p-8 text-center flex flex-col items-center justify-center text-text-muted">
             <ShoppingBag className="mb-3 text-zinc-300" size={48} />
-            <p className="font-medium">Keranjang Anda kosong.</p>
+            <p className="font-medium">Your cart is empty.</p>
         </div>
       )}
     </div>

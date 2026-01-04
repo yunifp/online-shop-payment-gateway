@@ -6,7 +6,7 @@ const SearchBar = ({ searchTerm, onSearchChange }) => {
     <div className="relative w-full">
       <input
         type="text"
-        placeholder="Cari produk..."
+        placeholder="Search products..."
         value={searchTerm}
         onChange={(e) => onSearchChange(e.target.value)}
         className="w-full pl-10 pr-4 py-3 rounded-lg border border-border-main bg-content-bg focus:outline-none focus:ring-2 focus:ring-theme-primary focus:border-transparent"

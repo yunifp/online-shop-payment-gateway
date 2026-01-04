@@ -9,7 +9,7 @@ const VoucherDetails = () => {
   const { vouchers, loading } = useVoucher();
   const [showCopyModal, setShowCopyModal] = useState(false);
 
-  // Cari voucher
+  // Find voucher
   const voucher = useMemo(() => {
     return vouchers.find(v => String(v.id) === id);
   }, [vouchers, id]);
@@ -30,22 +30,22 @@ const VoucherDetails = () => {
     }
   };
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center">Memuat detail voucher...</div>;
+  if (loading) return <div className="min-h-screen flex items-center justify-center">Loading voucher details...</div>;
   
   if (!voucher) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center text-center p-4">
-        <h2 className="text-2xl font-bold text-gray-800 mb-2">Voucher Tidak Ditemukan</h2>
-        <p className="text-gray-500 mb-6">Voucher yang Anda cari mungkin sudah dihapus atau tidak tersedia.</p>
+        <h2 className="text-2xl font-bold text-gray-800 mb-2">Voucher Not Found</h2>
+        <p className="text-gray-500 mb-6">The voucher you are looking for may have been removed or is unavailable.</p>
         <button onClick={() => navigate(-1)} className="text-theme-primary hover:underline flex items-center gap-2">
-          <ArrowLeft size={20} /> Kembali
+          <ArrowLeft size={20} /> Go Back
         </button>
       </div>
     );
   }
 
   const formatCurrency = (amount) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount);
-  const formatDate = (date) => new Date(date).toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+  const formatDate = (date) => new Date(date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
   
   const now = new Date();
   const isExpired = new Date(voucher.end_date) < now;
@@ -55,7 +55,7 @@ const VoucherDetails = () => {
     <div className="min-h-screen bg-gray-50 py-12 relative">
       <div className="container mx-auto px-4 max-w-3xl">
         <Link to="/product" className="inline-flex items-center text-gray-500 hover:text-theme-primary mb-6 transition-colors">
-          <ArrowLeft size={20} className="mr-2" /> Kembali ke Produk
+          <ArrowLeft size={20} className="mr-2" /> Back to Products
         </Link>
 
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
@@ -69,7 +69,7 @@ const VoucherDetails = () => {
                 {voucher.type === 'percentage' ? `${Math.floor(voucher.value)}% OFF` : formatCurrency(voucher.value)}
               </h1>
               <p className="opacity-90 font-medium">
-                {voucher.type === 'percentage' ? `Diskon hingga ${formatCurrency(voucher.max_discount)}` : 'Potongan Langsung'}
+                {voucher.type === 'percentage' ? `Discount up to ${formatCurrency(voucher.max_discount)}` : 'Flat Discount'}
               </p>
             </div>
             <div className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
@@ -82,43 +82,44 @@ const VoucherDetails = () => {
           <div className="p-8 space-y-8">
             <div>
                 <h3 className="text-lg font-bold text-gray-800 mb-3 flex items-center gap-2">
-                    <Info size={20} className="text-theme-primary" /> Deskripsi
+                    <span className="sr-only">Description</span>
+                    <Info size={20} className="text-theme-primary" /> Description
                 </h3>
                 <p className="text-gray-600 leading-relaxed bg-gray-50 p-4 rounded-lg border border-gray-100">
-                    {voucher.description || "Tidak ada deskripsi tambahan."}
+                    {voucher.description || "No additional description available."}
                 </p>
             </div>
 
             <div className="grid md:grid-cols-2 gap-8">
                 <div>
                     <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-                        <AlertCircle size={20} className="text-theme-primary" /> Syarat Penggunaan
+                        <AlertCircle size={20} className="text-theme-primary" /> Terms of Use
                     </h3>
                     <ul className="space-y-3">
                         <li className="flex items-start gap-3 text-sm text-gray-600">
                             <CheckCircle2 size={16} className="text-green-500 mt-0.5 flex-shrink-0" />
-                            <span>Min. Belanja: <span className="font-bold text-gray-800">{formatCurrency(voucher.min_purchase)}</span></span>
+                            <span>Min. Purchase: <span className="font-bold text-gray-800">{formatCurrency(voucher.min_purchase)}</span></span>
                         </li>
                         <li className="flex items-start gap-3 text-sm text-gray-600">
                             <CheckCircle2 size={16} className="text-green-500 mt-0.5 flex-shrink-0" />
-                            <span>Berlaku untuk semua produk</span>
+                            <span>Valid for all products</span>
                         </li>
                         {voucher.max_discount && (
                             <li className="flex items-start gap-3 text-sm text-gray-600">
                                 <CheckCircle2 size={16} className="text-green-500 mt-0.5 flex-shrink-0" />
-                                <span>Maks. Potongan: <span className="font-bold text-gray-800">{formatCurrency(voucher.max_discount)}</span></span>
+                                <span>Max. Discount: <span className="font-bold text-gray-800">{formatCurrency(voucher.max_discount)}</span></span>
                             </li>
                         )}
                          <li className="flex items-start gap-3 text-sm text-gray-600">
                             <CheckCircle2 size={16} className="text-green-500 mt-0.5 flex-shrink-0" />
-                            <span>Sisa Kuota: <span className="font-bold text-gray-800">{voucher.quota}</span></span>
+                            <span>Remaining Quota: <span className="font-bold text-gray-800">{voucher.quota}</span></span>
                         </li>
                     </ul>
                 </div>
 
                 <div>
                     <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-                        <Calendar size={20} className="text-theme-primary" /> Periode Aktif
+                        <Calendar size={20} className="text-theme-primary" /> Active Period
                     </h3>
                     <div className="space-y-4">
                         <div className="flex items-start gap-3">
@@ -126,7 +127,7 @@ const VoucherDetails = () => {
                                 <Clock size={16} className="text-green-600" />
                             </div>
                             <div>
-                                <p className="text-xs text-gray-500 font-semibold uppercase">Mulai</p>
+                                <p className="text-xs text-gray-500 font-semibold uppercase">Starts</p>
                                 <p className="text-sm font-medium text-gray-800">{formatDate(voucher.start_date)}</p>
                             </div>
                         </div>
@@ -135,7 +136,7 @@ const VoucherDetails = () => {
                                 <Clock size={16} className="text-red-600" />
                             </div>
                             <div>
-                                <p className="text-xs text-gray-500 font-semibold uppercase">Berakhir</p>
+                                <p className="text-xs text-gray-500 font-semibold uppercase">Ends</p>
                                 <p className="text-sm font-medium text-gray-800">{formatDate(voucher.end_date)}</p>
                             </div>
                         </div>
@@ -143,10 +144,10 @@ const VoucherDetails = () => {
                 </div>
             </div>
 
-                      {/* Copy Section */}
-          <div className="p-8">
-             <div className="flex flex-col items-center">
-                <p className="text-sm text-gray-500 font-medium mb-3 uppercase tracking-wider">Kode Voucher</p>
+            {/* Copy Section */}
+            <div className="p-8">
+               <div className="flex flex-col items-center">
+                <p className="text-sm text-gray-500 font-medium mb-3 uppercase tracking-wider">Voucher Code</p>
                 <div 
                   onClick={handleCopy}
                   className="flex items-center gap-2 bg-gray-50 border-2 border-dashed border-gray-300 p-2 pr-4 rounded-lg hover:border-theme-primary transition-all cursor-pointer group active:scale-95 select-none"
@@ -156,9 +157,9 @@ const VoucherDetails = () => {
                     </div>
                     <Copy size={20} className="text-gray-400 group-hover:text-theme-primary transition-colors" />
                 </div>
-                <p className="text-xs text-gray-400 mt-2">Klik kode untuk menyalin</p>
-             </div>
-          </div>
+                <p className="text-xs text-gray-400 mt-2">Click code to copy</p>
+               </div>
+            </div>
           </div>
 
           <div className="p-6 bg-gray-50 border-t border-gray-100 flex justify-center">
@@ -166,13 +167,13 @@ const VoucherDetails = () => {
                 onClick={() => navigate('/product')}
                 className="bg-theme-primary hover:bg-theme-primary-dark text-white font-bold py-3 px-8 rounded-lg shadow-lg hover:shadow-xl transition-all transform active:scale-95"
             >
-                Gunakan Sekarang
+                Use Now
             </button>
           </div>
         </div>
       </div>
 
-      {/* --- MODAL POPUP --- */}
+      {/* --- COPY POPUP MODAL --- */}
       <div 
         className={`fixed bottom-0 left-0 right-0 z-[60] flex justify-center px-4 pb-6 pointer-events-none transition-all duration-500 ease-out
           ${showCopyModal ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}
@@ -182,9 +183,9 @@ const VoucherDetails = () => {
             <CheckCircle2 className="text-green-400" size={24} />
           </div>
           <div className="flex-1">
-            <p className="font-bold text-sm">Kode Disalin!</p>
+            <p className="font-bold text-sm">Code Copied!</p>
             <p className="text-xs text-zinc-400 mt-0.5">
-              Kode <span className="text-white font-mono font-bold bg-zinc-800 px-1 rounded">{voucher.code}</span> siap digunakan.
+              Code <span className="text-white font-mono font-bold bg-zinc-800 px-1 rounded">{voucher.code}</span> is ready to use.
             </p>
           </div>
           <button 

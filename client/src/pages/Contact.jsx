@@ -6,16 +6,16 @@ const Contact = () => {
     <div className="bg-content-bg py-12 md:py-16">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-4xl">
         <h1 className="text-4xl font-bold text-center text-text-main mb-12">
-          Kontak Kami
+          Contact Us
         </h1>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
           
-          {/* Form Kontak */}
+          {/* Contact Form */}
           <form className="space-y-6">
             <div>
               <label htmlFor="name" className="block text-sm font-medium text-text-main mb-2">
-                Nama Anda
+                Your Name
               </label>
               <div className="relative">
                 <span className="absolute inset-y-0 left-0 flex items-center pl-3">
@@ -32,7 +32,7 @@ const Contact = () => {
 
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-text-main mb-2">
-                Email Anda
+                Your Email
               </label>
               <div className="relative">
                 <span className="absolute inset-y-0 left-0 flex items-center pl-3">
@@ -42,21 +42,21 @@ const Contact = () => {
                   type="email" 
                   id="email"
                   className="w-full pl-10 pr-4 py-3 rounded-lg border border-border-main bg-white focus:outline-none focus:ring-2 focus:ring-theme-primary"
-                  placeholder="anda@email.com"
+                  placeholder="you@email.com"
                 />
               </div>
             </div>
 
             <div>
               <label htmlFor="message" className="block text-sm font-medium text-text-main mb-2">
-                Pesan
+                Message
               </label>
               <div className="relative">
                 <textarea 
                   id="message"
                   rows="5"
                   className="w-full px-4 py-3 rounded-lg border border-border-main bg-white focus:outline-none focus:ring-2 focus:ring-theme-primary"
-                  placeholder="Tulis pesan Anda di sini..."
+                  placeholder="Write your message here..."
                 ></textarea>
               </div>
             </div>
@@ -65,22 +65,22 @@ const Contact = () => {
               type="submit"
               className="w-full bg-theme-primary text-white font-medium py-3 px-8 rounded-lg shadow-md hover:bg-theme-primary-dark transition-colors"
             >
-              Kirim Pesan
+              Send Message
             </button>
           </form>
 
-          {/* Info Kontak */}
+          {/* Contact Info */}
           <div className="space-y-6">
             <h2 className="text-2xl font-semibold text-text-main">
-              Info Lainnya
+              Get in Touch
             </h2>
             <p className="text-text-muted">
-              Jangan ragu untuk menghubungi kami melalui detail di bawah ini. Kami akan merespon secepat mungkin.
+              Feel free to reach out to us using the details below. We will get back to you as soon as possible.
             </p>
             <div className="space-y-4">
               <div className="flex items-center gap-4">
                 <Mail size={20} className="text-theme-primary-dark flex-shrink-0" />
-                <span className="text-text-main">info@rockstarclimbing.com</span>
+                <span className="text-text-main">support@rockstarclimbing.com</span>
               </div>
               <div className="flex items-center gap-4">
                 <Phone size={20} className="text-theme-primary-dark flex-shrink-0" />
@@ -89,8 +89,8 @@ const Contact = () => {
               <div className="flex items-start gap-4">
                 <MapPin size={20} className="text-theme-primary-dark flex-shrink-0 mt-1" />
                 <span className="text-text-main">
-                  Jl. Petualangan No. 45, <br />
-                  Jakarta Selatan, Indonesia
+                  45 Adventure St., <br />
+                  South Jakarta, Indonesia
                 </span>
               </div>
             </div>

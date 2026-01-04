@@ -27,12 +27,15 @@ const Register = () => {
     try {
       await register(formData.name, formData.email, formData.password);
     } catch (error) {
-      console.error(error);
+      // Error handling sudah ditangani useAuth (toast)
+      // Kita bisa reset password field jika gagal
+      setFormData(prev => ({ ...prev, password: '' }));
     }
   };
 
   return (
     <div className="h-full py-10 md:py-0 md:min-h-screen flex flex-col md:flex-row bg-content-bg text-text-main">
+      {/* Form Section */}
       <div className="w-full md:w-1/2 flex items-center justify-center p-8 lg:p-12 order-last md:order-first">
         <div className="w-full max-w-md animate-in fade-in-50 slide-in-from-bottom-10 duration-500">
           <img 

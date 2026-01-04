@@ -9,21 +9,60 @@ const {
   Transaction,
   TransactionDetail,
 } = require("../models");
+const { Op } = require("sequelize");
 const MidtransService = require("./midtransService");
 const midtransService = new MidtransService();
 const whatsappService = require("./whatsappService");
 // const rajaOngkirService = require("./rajaOngkirService"); // Tidak butuh lagi untuk booking
-
 
 class TransactionService {
   _generateOrderId() {
     return `TRX-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
   }
 
+  async getUserTransactions(userId, queryParams) {
+    try {
+      const { page = 1, limit = 10, status, search } = queryParams;
+      const offset = (parseInt(page) - 1) * parseInt(limit);
+
+      // Filter wajib: Hanya milik User yang sedang login
+      const whereCondition = {
+        user_id: userId,
+      };
+
+      // 1. Filter by Status (Opsional)
+      if (status) {
+        whereCondition.status = status;
+      }
+
+      // 2. Search by Order ID (Opsional)
+      if (search) {
+        whereCondition.order_id_display = { [Op.like]: `%${search}%` };
+      }
+
+      const { count, rows } = await Transaction.findAndCountAll({
+        where: whereCondition,
+        // Kita tidak perlu include User karena user pasti tau itu datanya sendiri
+        // Tapi kita include detail barang agar user bisa lihat apa yang dibeli
+        limit: parseInt(limit),
+        offset: parseInt(offset),
+        order: [["createdAt", "DESC"]],
+      });
+
+      return {
+        total_data: count,
+        total_page: Math.ceil(count / parseInt(limit)),
+        current_page: parseInt(page),
+        data: rows,
+      };
+    } catch (error) {
+      throw new Error(`Gagal mengambil riwayat transaksi: ${error.message}`);
+    }
+  }
   async getAllTransactions(queryParams) {
     try {
       const { page = 1, limit = 10, status, search } = queryParams;
-      
+
       const offset = (parseInt(page) - 1) * parseInt(limit);
       const whereCondition = {};
 
@@ -41,11 +80,11 @@ class TransactionService {
       const { count, rows } = await Transaction.findAndCountAll({
         where: whereCondition,
         include: [
-          { 
-            model: User, 
-            as: "user", 
-            attributes: ["id", "name", "email", "phone_number"] // Ambil data user penting saja
-          }
+          {
+            model: User,
+            as: "user",
+            attributes: ["id", "name", "email", "phone_number"], // Ambil data user penting saja
+          },
         ],
         limit: parseInt(limit),
         offset: parseInt(offset),
@@ -57,11 +96,41 @@ class TransactionService {
         total_data: count,
         total_page: Math.ceil(count / parseInt(limit)),
         current_page: parseInt(page),
-        data: rows
+        data: rows,
       };
-
     } catch (error) {
       throw new Error(`Gagal mengambil data transaksi: ${error.message}`);
+    }
+  }
+
+  async getTransactionById(id) {
+    try {
+      const transaction = await Transaction.findByPk(id, {
+        include: [
+          {
+            model: User,
+            as: "user",
+            attributes: ["id", "name", "email", "phone_number"],
+          },
+          {
+            model: TransactionDetail,
+            as: "details",
+            // Kita include sampai ke produk supaya tahu barang apa yg dibeli
+            include: [
+              {
+                model: Products_Variant, // Pastikan model ini di-import
+                as: "product_variant",
+                include: [{ model: Products, as: "product" }],
+              },
+            ],
+          },
+        ],
+      });
+
+      if (!transaction) throw new Error("Transaksi tidak ditemukan.");
+      return transaction;
+    } catch (error) {
+      throw new Error(error.message);
     }
   }
   async createTransaction(userId, checkoutData) {
@@ -95,6 +164,61 @@ class TransactionService {
 
       if (!user.cart_items || user.cart_items.length === 0) {
         throw new Error("Keranjang Anda kosong.");
+      }
+
+      if (voucher_code) {
+        // 1. CEK KETERSEDIAAN: Apakah voucher ada di database?
+        const voucher = await Vouchers.findOne({
+          where: { code: voucher_code },
+          transaction: t,
+        });
+
+        if (!voucher) {
+          throw new Error("Kode Voucher tidak ditemukan.");
+        }
+
+        // 2. CEK MASA BERLAKU: Apakah tanggalnya valid?
+        const now = new Date();
+        const startDate = new Date(voucher.start_date);
+        const endDate = new Date(voucher.end_date);
+
+        if (now < startDate) throw new Error("Voucher belum bisa digunakan.");
+        if (now > endDate) throw new Error("Voucher sudah kadaluarsa.");
+
+        // 3. CEK RIWAYAT PEMAKAIAN (Barrier 1x Pakai)
+        // Kita cari di tabel Transaction:
+        // "Adakah transaksi milik User ini, dengan Voucher Code ini, yang statusnya BUKAN cancelled?"
+        const alreadyUsed = await Transaction.findOne({
+          where: {
+            user_id: userId,
+            voucher_code: voucher_code, // Pastikan kolom ini ada di DB
+            status: {
+              [Op.not]: "cancelled", // Kalau order sebelumnya batal, boleh pakai lagi
+            },
+          },
+          transaction: t,
+        });
+
+        if (alreadyUsed) {
+          throw new Error(
+            "Anda sudah pernah menggunakan voucher ini sebelumnya."
+          );
+        }
+
+        // 4. HITUNG DISKON
+        // Jika lolos semua cek di atas, baru hitung potongannya
+        if (voucher.type === "percentage") {
+          // Contoh: 10% dari total harga barang
+          discountAmount = subtotal_items * (voucher.value / 100);
+        } else if (voucher.type === "fixed") {
+          // Contoh: Potongan Rp 10.000
+          discountAmount = parseFloat(voucher.value);
+        }
+
+        // Validasi agar diskon tidak melebihi harga barang
+        if (discountAmount > subtotal_items) {
+          discountAmount = subtotal_items;
+        }
       }
 
       // B. Validasi Stok & Hitung Harga
@@ -275,8 +399,50 @@ class TransactionService {
 
         // Kirim WA jika sukses bayar
         if (newStatus === "paid") {
-          const msg = `Halo Kak, pembayaran untuk order *${orderId}* telah kami terima! ✅\nKami akan segera memproses pengiriman.`;
-          await whatsappService.sendMessage(transaction.user.phone_number, msg);
+          // 1. Notifikasi ke User (Pelanggan) - Biar tenang
+          const msgUser = `Halo Kak, pembayaran untuk Order ID *${orderId}* telah kami terima! ✅\nPesanan Anda akan segera diproses oleh tim kami.`;
+          await whatsappService.sendMessage(
+            transaction.user.phone_number,
+            msgUser
+          );
+
+          // 2. Notifikasi ke SEMUA ADMIN (Ambil dari Database)
+          try {
+            // Cari user yang role-nya 'admin' (exclude staff)
+            const admins = await User.findAll({
+              where: { role: "admin" },
+              attributes: ["name", "phone_number"], // Ambil nama & no hp saja biar ringan
+            });
+
+            if (admins.length > 0) {
+              const formattedTotal = new Intl.NumberFormat("id-ID").format(
+                transaction.grand_total
+              );
+              const msgAdmin = `*UANG MASUK! (PAID)*
+
+Order ID: *${orderId}*
+Customer: ${transaction.user.name}
+Total: *Rp ${formattedTotal}*
+
+Status Pembayaran: LUNAS ✅
+Mohon segera dipacking dan dikirim! 🚀`;
+
+              // Loop kirim ke semua admin yang ditemukan
+              for (const admin of admins) {
+                if (admin.phone_number) {
+                  console.log(`Mengirim notif lunas ke Admin: ${admin.name}`);
+                  // Tidak pakai await di loop agar tidak saling tunggu (Parallel)
+                  whatsappService.sendMessage(admin.phone_number, msgAdmin);
+                }
+              }
+            } else {
+              console.log(
+                "Tidak ada Admin yang ditemukan di Database untuk dikirimi notifikasi."
+              );
+            }
+          } catch (dbError) {
+            console.error("Gagal mengambil data Admin:", dbError.message);
+          }
         }
       }
 

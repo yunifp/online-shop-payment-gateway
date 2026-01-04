@@ -46,17 +46,28 @@ class AuthController {
   }
   async verifyEmail(req, res) {
     try {
-      // 1. Ambil OTP dari body
       const { otp } = req.body;
+      const { email } = req.user; // Dari middleware authenticate
 
-      // 2. Ambil EMAIL dari TOKEN (req.user)
-      const { email } = req.user;
+      // 1. Panggil service untuk verifikasi & dapatkan token baru
+      const serviceResult = await authService.verifyEmail(email, otp);
+      
+      // Jaga-jaga jika service mengembalikan object token saja atau string token
+      const token = serviceResult.token || serviceResult;
 
-      // 3. Panggil service
-      // Service akan mengembalikan token baru (refresh token)
-      const { token, user } = await authService.verifyEmail(email, otp);
+      // 2. AMBIL DATA USER TERBARU DARI DB (FIX)
+      // Kita wajib ambil ulang agar status 'is_verified' dan data lainnya fresh.
+      // Jangan andalkan return dari service jika tidak yakin.
+      const user = await User.findOne({ 
+        where: { email },
+        attributes: { exclude: ['password', 'otp'] } // Jangan kirim password/otp
+      });
 
-      // 4. Atur cookie dengan token BARU (is_verified: true)
+      if (!user) {
+        return res.error("User not found after verification", 404);
+      }
+
+      // 3. Set Cookie
       const cookieOptions = {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
@@ -64,9 +75,9 @@ class AuthController {
       };
       res.cookie("token", token, cookieOptions);
 
-      // 5. Kembalikan data user yang sudah terverifikasi
+      // 4. Kirim response dengan USER yang sudah pasti ada
       res.success(
-        { user: user },
+        { user: user }, 
         "Verification successful. Token refreshed.",
         200
       );
@@ -74,6 +85,7 @@ class AuthController {
       res.error(error.message, 400);
     }
   }
+
 
   async resendVerification(req, res) {
     try {

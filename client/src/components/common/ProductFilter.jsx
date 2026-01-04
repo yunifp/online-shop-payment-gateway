@@ -25,10 +25,10 @@ const ProductFilter = ({ selectedCategories, onCategoryChange, onResetFilters })
 
         {/* Filter Kategori */}
         <div>
-          <h4 className="font-semibold text-text-main mb-3">Kategori</h4>
+          <h4 className="font-semibold text-text-main mb-3">Category</h4>
           <div className="space-y-2">
             {loading ? (
-              <p className="text-sm text-text-muted">Memuat kategori...</p>
+              <p className="text-sm text-text-muted">Loading categories...</p>
             ) : (
               categories.map((category) => (
                 <label key={category.id} className="flex items-center space-x-2 cursor-pointer">

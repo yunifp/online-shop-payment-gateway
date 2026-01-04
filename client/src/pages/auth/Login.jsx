@@ -12,12 +12,16 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  // Cek jika user sudah login saat komponen dimuat
+  // Redirect jika sudah login
   useEffect(() => {
     const userString = localStorage.getItem("user");
     if (userString) {
-      const user = JSON.parse(userString);
-      redirectByRole(user.role);
+      try {
+        const user = JSON.parse(userString);
+        redirectByRole(user.role);
+      } catch (e) {
+        localStorage.removeItem("user"); // Bersihkan jika data corrupt
+      }
     }
   }, [redirectByRole]);
 
@@ -26,22 +30,13 @@ const Login = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const res = await login(email, password);
-      
-    
-      const userRole = res?.data?.user?.role; 
-      
-      if (userRole === "customer") {
-        navigate('/customer/pesanan');
-      } else if (["admin", "staff"].includes(userRole)) {
-        navigate('/admin');
-      } else {
-        navigate('/');
-      }
-
+      // PENTING: Kita tidak perlu logika 'if (role === ...)' disini lagi.
+      // Hook useAuth sudah menangani redirect setelah login sukses.
+      await login(email, password);
     } catch (err) {
-      // Tampilkan error yang lebih user-friendly jika ada
-      alert(err.response?.data?.message || "Login gagal. Silakan coba lagi.");
+      // Error handling sudah ditangani oleh toast di dalam useAuth.
+      // Kita biarkan kosong atau reset form password jika mau.
+      setPassword(""); 
     }
   };
 
@@ -82,12 +77,12 @@ const Login = () => {
             </div>
 
             <div className="text-right">
-              <Link to="/forgot-password" size={18} className="text-sm font-medium text-theme-primary-dark hover:underline">Lupa password?</Link>
+              <Link to="/forgot-password" className="text-sm font-medium text-theme-primary-dark hover:underline">Lupa password?</Link>
             </div>
 
             <button 
               type="submit"
-              className="w-full flex items-center justify-center bg-theme-primary text-white font-medium py-3 px-6 rounded-lg shadow-md hover:bg-theme-primary-dark transition-all duration-300 transform hover:-translate-y-0.5"
+              className="w-full flex items-center justify-center bg-theme-primary text-white font-medium py-3 px-6 rounded-lg shadow-md hover:bg-theme-primary-dark transition-all duration-300 transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
               disabled={loading}
             >
               <LogIn size={18} className="mr-2" />

@@ -25,8 +25,7 @@ router.get(
   userController.getMe // Controller baru
 );
 // UPDATE
-router.put("/:id", authenticate, adminOrStaff, userController.updateUser);
-router.patch("/:id", authenticate, adminOrStaff, userController.updateUser);
+router.put("/me", authenticate, userController.updateMyProfile);
 
 // DELETE
 router.get(

@@ -95,30 +95,30 @@ const VoucherCard = ({ voucher }) => {
                 <h3 className="font-bold text-text-main text-lg tracking-wide uppercase truncate" title={code}>{code}</h3>
                 <p className="text-xs text-text-muted mt-0.5 line-clamp-1">
                   {description || (type === 'percentage' 
-                    ? `Diskon ${value}%` 
-                    : `Potongan ${formatCurrency(value)}`
+                    ? `Discount ${value}%` 
+                    : `OFF ${formatCurrency(value)}`
                   )}
                 </p>
               </div>
               {isActive ? (
                 <span className="bg-green-100 text-green-700 text-[10px] px-2 py-0.5 rounded-full font-bold flex-shrink-0">
-                  AKTIF
+                  Active
                 </span>
               ) : (
                 <span className="bg-red-100 text-red-700 text-[10px] px-2 py-0.5 rounded-full font-bold flex-shrink-0">
-                  HANGUS
+                  Expired
                 </span>
               )}
             </div>
 
             <div className="mt-3 space-y-1">
               <p className="text-xs text-zinc-500 flex items-center gap-1.5">
-                <span className="font-medium text-zinc-700">Min. Belanja:</span> 
+                <span className="font-medium text-zinc-700">Min. Shopping:</span> 
                 {formatCurrency(min_purchase)}
               </p>
               <p className="text-xs text-zinc-400 flex items-center gap-1.5">
                 <Calendar size={12} />
-                Hingga: {formatDate(end_date)}
+                Until {formatDate(end_date)}
               </p>
             </div>
           </div>
@@ -134,7 +134,7 @@ const VoucherCard = ({ voucher }) => {
                   : 'bg-zinc-200 text-zinc-400 cursor-not-allowed'}`}
             >
               <Copy size={12} />
-              Salin Kode
+              Copy Code
             </button>
           </div>
         </div>
@@ -150,9 +150,9 @@ const VoucherCard = ({ voucher }) => {
             <CheckCircle2 className="text-green-400" size={24} />
           </div>
           <div className="flex-1">
-            <p className="font-bold text-sm">Berhasil Disalin!</p>
+            <p className="font-bold text-sm">Successfully Copied!</p>
             <p className="text-xs text-zinc-400 mt-0.5">
-              Gunakan kode <span className="text-white font-mono font-bold bg-zinc-800 px-1 rounded">{code}</span> saat checkout.
+              Use code <span className="text-white font-mono font-bold bg-zinc-800 px-1 rounded">{code}</span>
             </p>
           </div>
           <button 

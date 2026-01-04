@@ -91,6 +91,20 @@ class UserController {
     }
   }
   // Update
+  async updateMyProfile(req, res) {
+    try {
+      // Ambil ID dari token (req.user set oleh middleware authenticate)
+      const userId = req.user.id;
+
+      // Reuse logic update, tapi paksa ID-nya pakai ID sendiri
+      // Pastikan service Anda menerima (id, data)
+      const updatedUser = await userService.updateUser(userId, req.body);
+
+      res.success(updatedUser, "Profil Anda berhasil diperbarui");
+    } catch (error) {
+      res.error(error.message, 400);
+    }
+  }
   async updateUser(req, res) {
     try {
       const user = await userService.updateUser(req.params.id, req.body);

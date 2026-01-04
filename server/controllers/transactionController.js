@@ -2,6 +2,21 @@
 const transactionService = require("../services/transactionService");
 
 class TransactionController {
+  async getMyTransactions(req, res) {
+    try {
+      const userId = req.user.id; // Diambil dari Token (Middleware authenticate)
+      const queryParams = req.query; // ?page=1&status=paid
+
+      const result = await transactionService.getUserTransactions(
+        userId,
+        queryParams
+      );
+
+      res.success(result, "Riwayat transaksi Anda berhasil diambil.");
+    } catch (error) {
+      res.error(error.message, 500);
+    }
+  }
   async getAllTransactions(req, res) {
     try {
       // Ambil parameter dari URL (misal: ?page=1&status=paid&search=TRX-123)
@@ -12,6 +27,24 @@ class TransactionController {
       res.success(result, "Data transaksi berhasil diambil.");
     } catch (error) {
       res.error(error.message, 500);
+    }
+  }
+  async getDetail(req, res) {
+    try {
+      const { id } = req.params;
+
+      // Panggil service yang "BERAT" tadi
+      const result = await transactionService.getTransactionById(id);
+
+      // Validasi keamanan:
+      // Jika user biasa (bukan admin) mencoba lihat detail transaksi orang lain -> TOLAK
+      if (req.user.role === "customer" && result.user_id !== req.user.id) {
+        return res.error("Anda tidak berhak melihat transaksi ini.", 403);
+      }
+
+      res.success(result, "Detail transaksi berhasil diambil.");
+    } catch (error) {
+      res.error(error.message, 404);
     }
   }
   async createTransaction(req, res) {

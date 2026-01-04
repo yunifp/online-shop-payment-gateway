@@ -13,6 +13,7 @@ const voucherRoutes = require("./voucherRoutes");
 const addressRoutes = require("./addressRoutes");
 const rajaOngkirRoutes = require("./rajaOngkirRoutes");
 const transactionRoutes = require("./transactionRoutes");
+const trackingRoutes = require("./trackingRoutes");
 
 // Daftarkan router
 router.use("/users", userRoutes);
@@ -24,6 +25,7 @@ router.use("/shop-addresses", shopAddressRoutes);
 router.use("/vouchers", voucherRoutes);
 router.use("/addresses", addressRoutes);
 router.use("/shipping", rajaOngkirRoutes);
+router.use("/tracking", trackingRoutes);
 router.use("/transactions", transactionRoutes);
 // router.use('/products', productRoutes); // Contoh untuk nanti
 

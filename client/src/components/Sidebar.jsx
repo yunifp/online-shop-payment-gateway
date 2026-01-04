@@ -14,6 +14,7 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   X,
+  User, 
 } from "lucide-react";
 import logo from "../assets/logo.jpg";
 
@@ -207,6 +208,13 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
             to="/"
             icon={<Home size={20} />}
             text="Beranda"
+            isOpen={isOpen}
+            setIsOpen={setIsOpen}
+          />
+          <SidebarLink
+            to="/customer/profil"
+            icon={<User size={20} />}
+            text="Profil Saya"
             isOpen={isOpen}
             setIsOpen={setIsOpen}
           />

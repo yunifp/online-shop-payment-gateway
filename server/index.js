@@ -1,6 +1,7 @@
 
 // index.js (File Utama)
 const express = require("express");
+const cronService = require("./services/cronService");
 const app = express();
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
@@ -8,7 +9,8 @@ const PORT = process.env.PORT || 3000;
 const responseHandler = require("./middleware/responseHandler");
 const path = require("path");
 
-const allowedOrigins = (process.env.ALLOWED_ORIGINS || "http://localhost:5173").split(",");
+const allowedOrigins = (process.env.ALLOWED_ORIGINS || "").split(",");
+
 const corsOptions = {
   // origin: menentukan URL mana yang boleh request
   origin: function (origin, callback) {
@@ -24,7 +26,7 @@ const corsOptions = {
   // mengirim HttpOnly Cookie (token JWT kita)
   credentials: true,
 };
-
+cronService.start();
 // 1. PENTING: Middleware untuk membaca JSON (req.body)
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use(cors(corsOptions));
@@ -35,7 +37,6 @@ app.use(responseHandler);
 
 // 2. Import Router Utama
 const mainRouter = require("./routes/index");
-
 // 3. Daftarkan Router Utama dengan prefix /api/v1
 app.use("/api/v1", mainRouter);
 
