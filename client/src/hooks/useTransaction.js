@@ -36,24 +36,6 @@ export const useTransaction = () => {
     }
   }, [API_URL]);
 
-  const prepareTransaction = useCallback(async (payload) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await axios.post(`${API_URL}/transactions/prepare`, payload, {
-        withCredentials: true,
-      });
-      return res.data; 
-    } catch (err) {
-      const message = err.response?.data?.meta?.message || err.message;
-      setError(message);
-      toast.error(`Gagal memuat rincian pesanan: ${message}`);
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  }, [API_URL]);
-
   const fetchMyTransactions = useCallback(async (params = {}) => {
     setLoading(true);
     setError(null);
@@ -144,6 +126,5 @@ export const useTransaction = () => {
     createTransaction,
     updateTransactionStatus,
     repayTransaction,
-    prepareTransaction
   };
 };
