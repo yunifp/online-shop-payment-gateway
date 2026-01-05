@@ -59,48 +59,48 @@ class AuthService {
 
     return token;
   }
-  async verifyEmail(email, submittedOtp) {
+async verifyEmail(email, submittedOtp) {
     if (!email || !submittedOtp) {
       throw new Error("Email and OTP are required");
     }
 
-    // 1. Cari user berdasarkan email
     const user = await User.findOne({ where: { email } });
     if (!user) {
       throw new Error("User not found");
     }
 
-    // 2. Cek apakah sudah terverifikasi
     if (user.is_email_verified) {
-      throw new Error("Email is already verified");
+      // Jika user iseng kirim ulang padahal sudah verified, kita tetap kasih token login
+      const token = this.generateTokenForUser(user);
+      return { token, message: "Email is already verified" };
     }
 
-    // 3. Cek apakah token/OTP-nya ada
+    // Cek Token/OTP
     if (!user.verification_token || !user.verification_expires) {
       throw new Error("Invalid verification request. Please resend OTP.");
     }
 
-    // 4. Cek apakah OTP sudah kedaluwarsa
     if (new Date() > new Date(user.verification_expires)) {
       throw new Error("OTP has expired. Please resend.");
     }
 
-    // 5. Bandingkan OTP (plain text) dengan HASH (bcrypt) di DB
-    // Ini adalah inti verifikasinya
     const isMatch = await bcrypt.compare(submittedOtp, user.verification_token);
-
     if (!isMatch) {
       throw new Error("Invalid OTP");
     }
 
-    // 6. SUKSES! Update user
+    // Update Status User
     await user.update({
       is_email_verified: true,
-      verification_token: null, // Bersihkan token
-      verification_expires: null, // Bersihkan kedaluwarsa
+      verification_token: null,
+      verification_expires: null,
     });
 
-    return { message: "Email verification successful." };
+    // --- PERBAIKAN DI SINI: GENERATE TOKEN BARU ---
+    // Agar setelah verifikasi, user langsung punya "Tiket Masuk" yang valid
+    const token = this.generateTokenForUser(user);
+
+    return { token, message: "Email verification successful." };
   }
   async forgotPassword(email) {
     if (!email) {

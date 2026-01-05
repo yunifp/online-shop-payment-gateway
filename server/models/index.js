@@ -12,7 +12,13 @@ const env = process.env.NODE_ENV || "development";
 const configPath = path.join(__dirname, "..", "config", "config.js");
 const config = require(configPath)[env];
 // --- SELESAI PERBAIKAN ---
-
+config.timezone = "+07:00"; // Paksa Offset Query +7
+config.dialectOptions = config.dialectOptions || {};
+Object.assign(config.dialectOptions, {
+  timezone: "+07:00", // Set koneksi MySQL ke +7
+  dateStrings: true, // BACA tanggal sebagai string mentah ( "2024-01-01 13:00" )
+  typeCast: true, // Wajib true agar dateStrings jalan
+});
 const db = {};
 
 let sequelize;

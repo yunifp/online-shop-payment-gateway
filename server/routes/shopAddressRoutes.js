@@ -8,13 +8,12 @@ const adminOnly = require("../middleware/adminOnly");
 // --- PENTING! ---
 // Terapkan 'authenticate' DAN 'adminOnly' ke SEMUA rute
 router.use(authenticate);
+// READ ALL
+router.get("/", shopAddressController.getAllAddresses);
 router.use(adminOnly);
 
 // CREATE
 router.post("/", shopAddressController.createAddress);
-
-// READ ALL
-router.get("/", shopAddressController.getAllAddresses);
 
 // READ ONE
 router.get("/:id", shopAddressController.getAddressById);

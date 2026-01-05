@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import useShipping from "../../hooks/useShipping"; // Pastikan hook ini dibuat (dari jawaban sebelumnya)
+import useShipping from "../../hooks/useShipping"; 
 import axios from "axios";
 import { toast } from "react-hot-toast";
 
@@ -8,13 +8,12 @@ export default function CompleteProfile() {
   const navigate = useNavigate();
   const API_URL = import.meta.env.VITE_API_URL;
 
-  // State User
-  const [user, setUser] = useState(
+  // State User (Hanya untuk mengambil nama default)
+  const [user] = useState(
     JSON.parse(localStorage.getItem("user") || "{}")
   );
-  const [phoneNumber, setPhoneNumber] = useState("");
 
-  // State Alamat
+  // Hook Shipping (RajaOngkir)
   const {
     provinces,
     cities,
@@ -27,13 +26,20 @@ export default function CompleteProfile() {
     loading: shippingLoading,
   } = useShipping();
 
+  // State Alamat Lengkap (Termasuk Phone Number)
   const [addressData, setAddressData] = useState({
     province_id: "",
+    province_name: "",
     city_id: "",
+    city_name: "",
     district_id: "",
+    district_name: "",
     sub_district_id: "",
+    sub_district_name: "",
     street: "",
-    details: "", // Patokan/Detail
+    details: "",
+    postal_code: "",
+    phone_number: "", // Disimpan di state alamat, bukan user
   });
 
   const [loading, setLoading] = useState(false);
@@ -43,29 +49,72 @@ export default function CompleteProfile() {
     getProvinces();
   }, [getProvinces]);
 
+  // --- HANDLER DROPDOWN ---
+  const handleProvinceChange = (e) => {
+    const id = e.target.value;
+    const selected = provinces.find(p => String(p.id) === String(id));
+    
+    setAddressData(prev => ({
+      ...prev,
+      province_id: id,
+      province_name: selected ? selected.name : "",
+      city_id: "", city_name: "", district_id: "", district_name: "", sub_district_id: "", sub_district_name: ""
+    }));
+    getCities(id);
+  };
+
+  const handleCityChange = (e) => {
+    const id = e.target.value;
+    const selected = cities.find(c => String(c.id) === String(id));
+    
+    setAddressData(prev => ({
+      ...prev,
+      city_id: id,
+      city_name: selected ? selected.name : "",
+      district_id: "", district_name: "", sub_district_id: "", sub_district_name: ""
+    }));
+    getDistricts(id);
+  };
+
+  const handleDistrictChange = (e) => {
+    const id = e.target.value;
+    const selected = districts.find(d => String(d.id) === String(id));
+    
+    setAddressData(prev => ({
+      ...prev,
+      district_id: id,
+      district_name: selected ? selected.name : "",
+      sub_district_id: "", sub_district_name: ""
+    }));
+    getSubDistricts(id);
+  };
+
+  const handleSubDistrictChange = (e) => {
+    const id = e.target.value;
+    const selected = subDistricts.find(sd => String(sd.id) === String(id));
+    
+    setAddressData(prev => ({
+      ...prev,
+      sub_district_id: id,
+      sub_district_name: selected ? selected.name : ""
+    }));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      // 1. Update Profile User (Nomor HP)
-      // Kita pakai endpoint customer update. Sesuaikan ID user.
-      await axios.put(
-        `${API_URL}/users/customer/${user.id}`,
-        { phone_number: phoneNumber },
-        { withCredentials: true }
-      );
+      // PERUBAHAN: Tidak ada update ke tabel Users (axios.put dihapus)
 
       // 2. Buat Alamat Baru
-      // Kita perlu menyusun nama lokasi (Provinsi, Kota, dll) untuk disimpan string-nya juga jika DB butuh string
-      // Tapi biasanya endpoint address menerima ID-nya saja atau string-nya.
-      // Asumsi endpoint address menerima field sesuai DB.
-
       const payloadAddress = {
         ...addressData,
-        is_primary: true, // Jadikan alamat utama
-        recipient_name: user.name,
-        phone_number: phoneNumber,
+        full_address: addressData.street, // Mapping street -> full_address
+        recipient_name: user.name,        // Default nama user
+        recipient_phone: addressData.phone_number, // Mapping ke recipient_phone (Tabel Addresses)
+        is_primary: true,
+        is_default: true,
       };
 
       await axios.post(`${API_URL}/addresses`, payloadAddress, {
@@ -74,7 +123,10 @@ export default function CompleteProfile() {
 
       toast.success("Profil berhasil dilengkapi!");
 
-      // 3. Selesai -> Ke Beranda
+      // Update local storage user (flag only)
+      const updatedUser = { ...user, is_completed: true };
+      localStorage.setItem("user", JSON.stringify(updatedUser));
+
       navigate("/");
     } catch (error) {
       console.error(error);
@@ -99,7 +151,8 @@ export default function CompleteProfile() {
           </div>
 
           <form onSubmit={handleSubmit} className="p-6 space-y-6">
-            {/* Bagian Data Diri */}
+            
+            {/* Bagian Kontak Penerima */}
             <div>
               <h3 className="text-lg font-medium text-gray-900 mb-4">
                 Informasi Kontak
@@ -107,7 +160,7 @@ export default function CompleteProfile() {
               <div className="grid grid-cols-1 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
-                    Nama Lengkap
+                    Nama Penerima
                   </label>
                   <input
                     type="text"
@@ -121,12 +174,12 @@ export default function CompleteProfile() {
                     Nomor WhatsApp / HP
                   </label>
                   <input
-                    type="tel"
+                    type="number"
                     required
-                    value={phoneNumber}
-                    onChange={(e) => setPhoneNumber(e.target.value)}
                     placeholder="Contoh: 08123456789"
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary"
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-theme-primary focus:border-theme-primary outline-none"
+                    value={addressData.phone_number}
+                    onChange={(e) => setAddressData({...addressData, phone_number: e.target.value})}
                   />
                 </div>
               </div>
@@ -142,106 +195,69 @@ export default function CompleteProfile() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Provinsi */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Provinsi
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700">Provinsi</label>
                   <select
                     required
-                    className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm rounded-md"
-                    onChange={(e) => {
-                      setAddressData({
-                        ...addressData,
-                        province_id: e.target.value,
-                      });
-                      getCities(e.target.value);
-                    }}
+                    className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-theme-primary focus:border-theme-primary sm:text-sm rounded-md"
+                    value={addressData.province_id}
+                    onChange={handleProvinceChange}
                   >
                     <option value="">Pilih Provinsi</option>
-                    {provinces.map((p) => (
-                      <option key={p.province_id} value={p.province_id}>
-                        {p.province}
-                      </option>
+                    {Array.isArray(provinces) && provinces.map((p) => (
+                      <option key={p.id} value={p.id}>{p.name}</option>
                     ))}
                   </select>
                 </div>
 
                 {/* Kota */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Kota/Kabupaten
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700">Kota/Kabupaten</label>
                   <select
                     required
                     disabled={!addressData.province_id}
-                    className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm rounded-md disabled:bg-gray-100"
-                    onChange={(e) => {
-                      setAddressData({
-                        ...addressData,
-                        city_id: e.target.value,
-                      });
-                      getDistricts(e.target.value);
-                    }}
+                    className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-theme-primary focus:border-theme-primary sm:text-sm rounded-md disabled:bg-gray-100"
+                    value={addressData.city_id}
+                    onChange={handleCityChange}
                   >
                     <option value="">Pilih Kota</option>
-                    {cities.map((c) => (
-                      <option key={c.city_id} value={c.city_id}>
-                        {c.type} {c.city_name}
-                      </option>
+                    {Array.isArray(cities) && cities.map((c) => (
+                      <option key={c.id} value={c.id}>{c.name}</option>
                     ))}
                   </select>
                 </div>
 
                 {/* Kecamatan */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Kecamatan
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700">Kecamatan</label>
                   <select
                     required
                     disabled={!addressData.city_id}
-                    className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm rounded-md disabled:bg-gray-100"
-                    onChange={(e) => {
-                      setAddressData({
-                        ...addressData,
-                        district_id: e.target.value,
-                      });
-                      getSubDistricts(e.target.value);
-                    }}
+                    className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-theme-primary focus:border-theme-primary sm:text-sm rounded-md disabled:bg-gray-100"
+                    value={addressData.district_id}
+                    onChange={handleDistrictChange}
                   >
                     <option value="">Pilih Kecamatan</option>
-                    {districts.map((d) => (
-                      <option key={d.subdistrict_id} value={d.subdistrict_id}>
-                        {d.subdistrict_name}
-                      </option>
+                    {Array.isArray(districts) && districts.map((d) => (
+                      <option key={d.id} value={d.id}>{d.name}</option>
                     ))}
                   </select>
                 </div>
 
-                {/* Kelurahan (Optional jika API RajaOngkir Basic biasanya cuma sampai Kecamatan) */}
-                {/* Jika subDistricts kosong, disable atau hide */}
-                {subDistricts.length > 0 && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      Kelurahan/Desa
-                    </label>
-                    <select
-                      className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm rounded-md"
-                      onChange={(e) =>
-                        setAddressData({
-                          ...addressData,
-                          sub_district_id: e.target.value,
-                        })
-                      }
-                    >
-                      <option value="">Pilih Kelurahan</option>
-                      {subDistricts.map((sd) => (
-                        <option key={sd.id} value={sd.id}>
-                          {sd.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                )}
+                {/* Kelurahan */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Kelurahan</label>
+                  <select
+                    disabled={!addressData.district_id}
+                    className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-theme-primary focus:border-theme-primary sm:text-sm rounded-md disabled:bg-gray-100"
+                    value={addressData.sub_district_id}
+                    onChange={handleSubDistrictChange}
+                  >
+                    <option value="">Pilih Kelurahan</option>
+                    {Array.isArray(subDistricts) && subDistricts.map((sd) => (
+                      <option key={sd.id} value={sd.id}>{sd.name}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
 
               {/* Detail Jalan */}
@@ -252,26 +268,39 @@ export default function CompleteProfile() {
                 <textarea
                   required
                   rows={3}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary sm:text-sm"
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-theme-primary focus:border-theme-primary sm:text-sm outline-none"
                   placeholder="Jl. Merbabu No. 123, RT 01/RW 02"
-                  onChange={(e) =>
-                    setAddressData({ ...addressData, street: e.target.value })
-                  }
+                  value={addressData.street}
+                  onChange={(e) => setAddressData({ ...addressData, street: e.target.value })}
                 ></textarea>
               </div>
 
-              <div className="mt-4">
-                <label className="block text-sm font-medium text-gray-700">
-                  Patokan / Detail Lainnya
-                </label>
-                <input
-                  type="text"
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary sm:text-sm"
-                  placeholder="Pagar hitam, sebelah warung"
-                  onChange={(e) =>
-                    setAddressData({ ...addressData, details: e.target.value })
-                  }
-                />
+              {/* Grid Detail Lain & Kode Pos */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Patokan / Detail Lainnya
+                  </label>
+                  <input
+                    type="text"
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-theme-primary focus:border-theme-primary sm:text-sm outline-none"
+                    placeholder="Pagar hitam, sebelah warung"
+                    value={addressData.details}
+                    onChange={(e) => setAddressData({ ...addressData, details: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Kode Pos
+                  </label>
+                  <input
+                    type="number"
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-theme-primary focus:border-theme-primary sm:text-sm outline-none"
+                    placeholder="40123"
+                    value={addressData.postal_code}
+                    onChange={(e) => setAddressData({ ...addressData, postal_code: e.target.value })}
+                  />
+                </div>
               </div>
             </div>
 

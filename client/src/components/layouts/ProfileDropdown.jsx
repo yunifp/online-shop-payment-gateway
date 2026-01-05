@@ -43,7 +43,9 @@ const ProfileDropdown = ({ isOpen, onLinkClick }) => {
             <Link
               /* Redirect dashboard berdasarkan role */
               to={
-                user.role === "admin" || user.role === "staff" ? "/admin" : "/customer"
+                user.role === "admin" || user.role === "staff"
+                  ? "/admin"
+                  : "/customer"
               }
               onClick={onLinkClick}
               className="flex items-center w-full px-3 py-2.5 rounded-md text-sm text-text-main hover:bg-theme-primary-light hover:text-theme-primary-dark transition-colors"

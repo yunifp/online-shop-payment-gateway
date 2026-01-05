@@ -43,8 +43,7 @@ class TrackingController {
       // 2. ATAU Jika status paket BELUM 'DELIVERED' DAN data sudah basi (> 6 jam).
       //    (Kenapa 6 jam? Kurir biasanya update pagi, siang, sore. Tidak tiap menit).
 
-      const shouldCallApi =
-        !trackingData || (statusPaket !== "DELIVERED" && hoursDiff >= 6);
+      const shouldCallApi = !trackingData || (statusPaket !== "DELIVERED" && hoursDiff >= 6);
 
       if (shouldCallApi) {
         console.log(
@@ -52,19 +51,38 @@ class TrackingController {
         );
 
         try {
-          // Tembak API
+          // 1. Tembak API
           const apiResult = await binderbyteService.trackPackage(
             transaction.courier,
             transaction.shipping_receipt_number
           );
 
-          // Simpan hasil terbaru ke Database
-          await transaction.update({
+          // 2. SIAPKAN DATA UPDATE
+          // Kita tampung dulu di variabel objek biar rapi
+          const dataToUpdate = {
             tracking_data: JSON.stringify(apiResult),
             last_tracking_check: now,
-          });
+          };
 
-          // Update variabel lokal untuk dikirim ke user
+          // 3. LOGIKA UPDATE STATUS (INI YANG KEMARIN HILANG)
+          // Cek status dari BinderByte
+          const statusDariKurir = apiResult.summary.status; // Contoh: 'DELIVERED', 'ON_PROCESS'
+
+          console.log(`[Tracking] Status dari Kurir: ${statusDariKurir}`);
+
+          if (statusDariKurir === "DELIVERED") {
+            // Jika kurir bilang sampai, ubah status database kita jadi 'completed'
+            // (Sesuaikan dengan enum di database Anda, misal 'completed' atau 'finished')
+            dataToUpdate.status = "completed";
+            console.log(
+              `[Tracking] 🎉 Auto-Update status transaksi jadi COMPLETED`
+            );
+          }
+
+          // 4. Eksekusi Update ke Database
+          await transaction.update(dataToUpdate);
+
+          // Update variabel lokal agar respons ke user langsung fresh
           trackingData = apiResult;
         } catch (apiError) {
           // Jika kuota habis atau error API, tapi kita punya data lama di DB

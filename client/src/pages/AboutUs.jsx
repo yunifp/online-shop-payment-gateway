@@ -93,7 +93,9 @@ const AboutUs = () => {
               <div>
                 <h3 className="text-lg font-semibold text-left text-text-main">Get in Touch</h3>
                 <p className="text-text-muted text-left">
-                  +62 21 1234-5678 / support@rockstarclimbing.id
+                  JL. Lapang Rt 004 Rw 002 (Komplek Pabrik Soun)
+                  Karangsoka,Bantarwuni,Kembaran,Banyumas,Jawa Tengah 53181<br/>
+                  Phone: +62 88806123456<br/>
                 </p>
               </div>
             </div>

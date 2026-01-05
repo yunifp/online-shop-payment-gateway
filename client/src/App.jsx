@@ -21,25 +21,26 @@ import VerifyEmail from "./pages/auth/VerifyEmail";
 
 // Admin Pages
 import Dashboard from "./pages/admin/Dashboard";
+import AdminProfile from "./pages/admin/AdminProfile";
 import ProdukList from "./pages/admin/ProdukList";
 import Kategori from "./pages/admin/Kategori";
 import Voucher from "./pages/admin/Voucher";
 import Pengiriman from "./pages/admin/Pengiriman";
 import UserManagement from "./pages/admin/UserManagement";
 import RiwayatTransaksi from "./pages/admin/Pesanan";
-import RiwayatTransaksiCustomer from "./pages/customer/Pesanan"
+import RiwayatTransaksiCustomer from "./pages/customer/Pesanan";
 
 // Customer Pages
 import CompleteProfile from "./pages/customer/CompleteProfile";
 import CustomerProfile from "./pages/customer/Profile";
-
+import ForgotPassword from "./pages/auth/ForgotPassword";
+import ResetPassword from "./pages/auth/ResetPassword";
 // Components
 import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
   return (
     <Routes>
-
       {/* Public Routes */}
       <Route path="/" element={<PageLayout />}>
         <Route index element={<Homepage />} />
@@ -50,13 +51,21 @@ function App() {
         <Route path="about" element={<AboutUs />} />
         <Route path="contact" element={<Contact />} />
         <Route path="cart" element={<Cart />} />
-
         <Route path="login" element={<Login />} />
         <Route path="register" element={<Register />} />
-        <Route path="verify" element={<VerifyEmail />} />
-      </Route>
+        <Route path="forgot-password" element={<ForgotPassword />} />
+        <Route path="reset-password" element={<ResetPassword />} />
 
-      {/* Complete Profile (requires login but not role-specific) */}
+        {/* Complete Profile (requires login but not role-specific) */}
+      </Route>
+      <Route
+        path="verify"
+        element={
+          <ProtectedRoute>
+            <VerifyEmail />
+          </ProtectedRoute>
+        }
+      />
       <Route
         path="/complete-profile"
         element={
@@ -65,7 +74,6 @@ function App() {
           </ProtectedRoute>
         }
       />
-
       {/* Admin & Staff */}
       <Route
         path="/admin"
@@ -76,6 +84,7 @@ function App() {
         }
       >
         <Route index element={<Dashboard />} />
+        <Route path="profile" element={<AdminProfile />} />
         <Route path="produk" element={<ProdukList />} />
         <Route path="kategori" element={<Kategori />} />
         <Route path="voucher" element={<Voucher />} />
@@ -91,7 +100,6 @@ function App() {
           }
         />
       </Route>
-
       {/* Customer */}
       <Route
         path="/customer"
@@ -106,7 +114,6 @@ function App() {
         <Route path="pesanan" element={<RiwayatTransaksiCustomer />} />
         <Route path="pengiriman" element={<Pengiriman />} />
       </Route>
-
     </Routes>
   );
 }

@@ -101,6 +101,14 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
             setIsOpen={setIsOpen}
           />
 
+          <SidebarLink
+            to="/admin/profile"
+            icon={<Ticket size={20} />}
+            text="Profile"
+            isOpen={isOpen}
+            setIsOpen={setIsOpen}
+          />
+
           <div>
             <button
               onClick={handleProdukClick}

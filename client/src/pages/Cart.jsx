@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Trash2, ShoppingBag, Minus, Plus, TicketPercent, X, ArrowRight, Clipboard } from 'lucide-react';
 import useCart from '../hooks/useCart';
 import { useVoucher } from '../hooks/useVoucher';
+import CheckoutModal from '../components/CheckoutModal';
 import toast from 'react-hot-toast';
 
 const formatCurrency = (amount) => {
@@ -20,6 +21,7 @@ const Cart = () => {
   const [voucherCode, setVoucherCode] = useState("");
   const [appliedVoucher, setAppliedVoucher] = useState(null);
   const [voucherStatus, setVoucherStatus] = useState(null);
+  const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
 
   const inputVoucherRef = useRef(null);
 
@@ -43,19 +45,6 @@ const Cart = () => {
 
   const handleRemove = async (id) => {
     try { await deleteItem(id); toast.success("Item dihapus"); } catch (err) { toast.error("Gagal menghapus item"); }
-  };
-
-  const handleClearCart = async () => {
-    if (window.confirm("Yakin ingin mengosongkan keranjang?")) {
-      try {
-        await clearCart();
-        setAppliedVoucher(null);
-        setVoucherCode("");
-        toast.success("Keranjang dikosongkan");
-      } catch (error) {
-        toast.error("Gagal mengosongkan keranjang");
-      }
-    }
   };
 
   const cartItems = cart?.items || [];
@@ -90,23 +79,18 @@ const Cart = () => {
 
   const handleApplyVoucher = () => {
     setVoucherStatus(null);
-
     if (!voucherCode.trim()) {
       setVoucherStatus({ type: "error", message: "Silakan masukkan kode voucher" });
       return;
     }
-
     const voucher = vouchers.find(v => v.code.toLowerCase() === voucherCode.trim().toLowerCase());
-
     if (!voucher) {
       setVoucherStatus({ type: "error", message: "Voucher tidak tersedia atau kode salah" });
       return;
     }
-
     const now = new Date();
     const startDate = new Date(voucher.start_date);
     const endDate = new Date(voucher.end_date);
-
     const isExpired = now > endDate;
     const notStarted = now < startDate;
     const isInactive = !voucher.is_active;
@@ -116,17 +100,14 @@ const Cart = () => {
       setVoucherStatus({ type: "error", message: "Voucher sudah tidak berlaku" });
       return;
     }
-
     const minPurchase = Number(voucher.min_purchase) || 0;
-
     if (subtotal < minPurchase) {
       setVoucherStatus({
         type: "info",
-        message: `Voucher tidak dapat digunakan karena ketentuan tidak terpenuhi. Minimal belanja ${formatCurrency(minPurchase)}`
+        message: `Voucher tidak dapat digunakan. Min belanja ${formatCurrency(minPurchase)}`
       });
       return;
     }
-
     setAppliedVoucher(voucher);
     setVoucherStatus({ type: "success", message: "Voucher berhasil digunakan" });
   };
@@ -244,7 +225,6 @@ const Cart = () => {
                               className="w-full text-sm border border-border-main rounded-md pl-3 pr-9 py-2 bg-white uppercase focus:outline-none focus:border-theme-primary transition-colors"
                               disabled={voucherLoading}
                             />
-
                             <button
                               onClick={handlePaste}
                               className="absolute right-2 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 hover:bg-zinc-100 p-1 rounded transition-colors"
@@ -253,7 +233,6 @@ const Cart = () => {
                               <Clipboard size={14} />
                             </button>
                           </div>
-
                           <button
                             onClick={handleApplyVoucher}
                             disabled={!voucherCode || voucherLoading}
@@ -262,18 +241,8 @@ const Cart = () => {
                             {voucherLoading ? '...' : 'Gunakan'}
                           </button>
                         </div>
-
                         {voucherStatus && (
-                          <p
-                            className={
-                              "mt-2 text-xs font-medium " +
-                              (voucherStatus.type === "success"
-                                ? "text-green-600"
-                                : voucherStatus.type === "info"
-                                ? "text-amber-600"
-                                : "text-red-600")
-                            }
-                          >
+                          <p className={"mt-2 text-xs font-medium " + (voucherStatus.type === "success" ? "text-green-600" : voucherStatus.type === "info" ? "text-amber-600" : "text-red-600")}>
                             {voucherStatus.message}
                           </p>
                         )}
@@ -288,7 +257,6 @@ const Cart = () => {
                             </div>
                             <p className="text-xs text-green-600 mt-1">Hemat {formatCurrency(discountAmount)}</p>
                           </div>
-
                           <button onClick={handleRemoveVoucher} className="text-red-400 hover:text-red-600">
                             <X size={16} />
                           </button>
@@ -304,9 +272,9 @@ const Cart = () => {
                     </div>
                   )}
 
-                  <div className="flex justify-between">
+                  <div className="flex justify-between text-zinc-400 text-sm">
                     <span>Shipping Fee</span>
-                    <span className="text-green-600 font-medium text-sm bg-green-50 px-2 py-1 rounded">Gratis (Promo)</span>
+                    <span>Dihitung saat checkout</span>
                   </div>
                 </div>
 
@@ -317,7 +285,10 @@ const Cart = () => {
                   <span className="font-bold text-2xl text-theme-primary-dark">{formatCurrency(finalTotal)}</span>
                 </div>
 
-                <button className="w-full bg-theme-primary text-white font-bold py-4 rounded-lg shadow-lg hover:bg-theme-primary-dark flex justify-center items-center gap-2">
+                <button 
+                  onClick={() => setIsCheckoutOpen(true)}
+                  className="w-full bg-theme-primary text-white font-bold py-4 rounded-lg shadow-lg hover:bg-theme-primary-dark flex justify-center items-center gap-2 transition-transform active:scale-[0.98]"
+                >
                   <span>Checkout</span>
                   <ArrowRight size={20} />
                 </button>
@@ -326,6 +297,14 @@ const Cart = () => {
           </div>
         )}
       </div>
+
+      <CheckoutModal 
+        isOpen={isCheckoutOpen}
+        onClose={() => setIsCheckoutOpen(false)}
+        cart={cart}
+        appliedVoucher={appliedVoucher}
+        discountAmount={discountAmount}
+      />
     </div>
   );
 };

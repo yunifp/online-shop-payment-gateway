@@ -2,7 +2,17 @@
 const axios = require("axios");
 const cartRepository = require("../repositories/cartRepository");
 const shopAddressRepository = require("../repositories/shopAddressRepository");
-const { Products_Variant, Address, Carts, Products } = require("../models");
+const {
+  Products_Variant,
+  Address,
+  Carts,
+  Products,
+  // Import Model Wilayah Baru
+  Province,
+  City,
+  District,
+  Village,
+} = require("../models");
 // 1. Buat instance axios untuk API Komerce
 
 // Perhatikan baseURL BARU
@@ -43,79 +53,134 @@ class RajaOngkirService {
    */
   async getProvinces() {
     try {
+      const dbResult = await Province.findAll();
+
+      if (dbResult.length > 0) {
+        return dbResult.map((row) => JSON.parse(row.data));
+      }
+
+      console.log("📡 Fetching Provinces from Komerce API...");
       const response = await komerceApi.get("/destination/province");
-      return response.data; // Sesuaikan berdasarkan respons JSON aslinya
+      const apiResults = response.data.data;
+
+      if (!apiResults) return [];
+
+      const bulkData = apiResults.map((p) => ({
+        province_id: p.province_id || p.id,
+        data: JSON.stringify(p),
+      }));
+
+      await Province.bulkCreate(bulkData, {
+        updateOnDuplicate: ["data"], // Provinsi tidak punya parent, aman.
+      });
+
+      return apiResults;
     } catch (error) {
-      throw new Error(`Komerce API Error (Provinces): ${error.message}`);
+      console.error("Service Error:", error.message);
+      throw new Error(`Gagal mengambil provinsi: ${error.message}`);
     }
   }
 
-  /**
-   * Mengambil kota/kabupaten berdasarkan ID provinsi
-   * GET /destination/city/{province_id}
-   */
   async getCities(provinceId) {
-    if (!provinceId) {
-      throw new Error("Province ID is required");
-    }
+    if (!provinceId) throw new Error("Province ID is required");
     try {
+      const dbResult = await City.findAll({
+        where: { province_id: provinceId },
+      });
+
+      if (dbResult.length > 0) {
+        return dbResult.map((row) => JSON.parse(row.data));
+      }
+
+      console.log(`📡 Fetching Cities Prov ${provinceId}...`);
       const response = await komerceApi.get(`/destination/city/${provinceId}`);
-      return response.data; // Sesuaikan
+      const apiResults = response.data.data;
+
+      if (!apiResults) return [];
+
+      const bulkData = apiResults.map((c) => ({
+        city_id: c.city_id || c.id,
+        province_id: parseInt(provinceId), // Paksa sesuai input
+        data: JSON.stringify(c),
+      }));
+
+      // 🔥 FIX PENTING: Update province_id juga kalau data sudah ada!
+      await City.bulkCreate(bulkData, {
+        updateOnDuplicate: ["data", "province_id"],
+      });
+
+      return apiResults;
     } catch (error) {
-      throw new Error(`Komerce API Error (Cities): ${error.message}`);
+      throw new Error(`Gagal mengambil kota: ${error.message}`);
     }
   }
 
-  /**
-   * Mengambil kecamatan berdasarkan ID kota
-   * GET /destination/district/{city_id}
-   */
   async getDistricts(cityId) {
-    if (!cityId) {
-      throw new Error("City ID is required");
-    }
+    if (!cityId) throw new Error("City ID is required");
     try {
+      const dbResult = await District.findAll({ where: { city_id: cityId } });
+
+      if (dbResult.length > 0) {
+        return dbResult.map((row) => JSON.parse(row.data));
+      }
+
+      console.log(`📡 Fetching Districts City ${cityId}...`);
       const response = await komerceApi.get(`/destination/district/${cityId}`);
-      return response.data; // Sesuaikan
+      const apiResults = response.data.data;
+
+      if (!apiResults) return [];
+
+      const bulkData = apiResults.map((d) => ({
+        district_id: d.subdistrict_id || d.id,
+        city_id: parseInt(cityId),
+        data: JSON.stringify(d),
+      }));
+
+      // 🔥 FIX PENTING: Update city_id juga!
+      await District.bulkCreate(bulkData, {
+        updateOnDuplicate: ["data", "city_id"],
+      });
+
+      return apiResults;
     } catch (error) {
-      throw new Error(`Komerce API Error (Districts): ${error.message}`);
+      throw new Error(`Gagal mengambil kecamatan: ${error.message}`);
     }
   }
 
-  /**
-   * Mengambil desa/kelurahan berdasarkan ID kecamatan
-   * GET /destination/sub-district/{district_id}
-   */
   async getSubDistricts(districtId) {
-    if (!districtId) {
-      throw new Error("District ID is required");
-    }
+    if (!districtId) throw new Error("District ID is required");
     try {
+      const dbResult = await Village.findAll({
+        where: { district_id: districtId },
+      });
+
+      if (dbResult.length > 0) {
+        return dbResult.map((row) => JSON.parse(row.data));
+      }
+
+      console.log(`📡 Fetching Villages District ${districtId}...`);
       const response = await komerceApi.get(
         `/destination/sub-district/${districtId}`
       );
-      return response.data; // Sesuaikan
+      const apiResults = response.data.data;
+
+      if (!apiResults) return [];
+
+      const bulkData = apiResults.map((v) => ({
+        village_id: v.id || v.subdistrict_id,
+        district_id: parseInt(districtId),
+        data: JSON.stringify(v),
+      }));
+
+      // 🔥 FIX PENTING: Update district_id juga!
+      await Village.bulkCreate(bulkData, {
+        updateOnDuplicate: ["data", "district_id"],
+      });
+
+      return apiResults;
     } catch (error) {
-      throw new Error(`Komerce API Error (SubDistricts): ${error.message}`);
+      throw new Error(`Gagal mengambil desa: ${error.message}`);
     }
-  }
-
-  /**
-   * Mengubah string ETD (misal: "2-4 day") menjadi angka (misal: 2)
-   * @param {string} etd - String estimasi hari
-   * @returns {number} - Angka hari (terendah)
-   */
-  _parseEtd(etd) {
-    if (!etd || typeof etd !== "string" || etd.trim() === "") {
-      return 99; // Beri penalti tinggi jika ETD tidak ada (seperti J&T)
-    }
-
-    // Mengambil angka pertama dari string (misal: "2-4 day" -> 2, "3 day" -> 3)
-    const match = etd.match(/^(\d+)/);
-    if (match && match[1]) {
-      return parseInt(match[1], 10);
-    }
-    return 99; // Penalti jika format tidak dikenal
   }
   /**
    * Menghitung ongkos kirim (sesuai logika Anda)
