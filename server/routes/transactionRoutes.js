@@ -15,6 +15,7 @@ router.use(authenticate, isVerified);
 router.get("/history", transactionController.getMyTransactions);
 router.get("/", adminOrStaff, transactionController.getAllTransactions);
 router.get("/:id", transactionController.getDetail);
+router.post("/prepare", transactionController.prepare);
 router.post("/", transactionController.createTransaction);
 router.put(
   "/:id/status",

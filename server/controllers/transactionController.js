@@ -47,6 +47,37 @@ class TransactionController {
       res.error(error.message, 404);
     }
   }
+  async prepare(req, res) {
+    try {
+      const userId = req.user.id; // Dari Auth Middleware
+      const checkoutData = req.body;
+
+      // Panggil Service baru tadi
+      const result = await transactionService.prepareTransaction(
+        userId,
+        checkoutData
+      );
+
+      return res.status(200).json({
+        meta: {
+          code: 200,
+          status: "success",
+          message: "Order calculation retrieved successfully",
+        },
+        data: result,
+      });
+    } catch (error) {
+      console.error("Prepare Error:", error);
+      return res.status(400).json({
+        meta: {
+          code: 400,
+          status: "fail",
+          message: error.message,
+        },
+        data: null,
+      });
+    }
+  }
   async createTransaction(req, res) {
     try {
       const userId = req.user.id;

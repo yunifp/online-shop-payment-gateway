@@ -8,16 +8,188 @@ const {
   Products,
   Transaction,
   TransactionDetail,
+  Vouchers,
 } = require("../models");
 const { Op } = require("sequelize");
 const MidtransService = require("./midtransService");
 const midtransService = new MidtransService();
 const whatsappService = require("./whatsappService");
+const shopAddressRepository = require("../repositories/shopAddressRepository");
 // const rajaOngkirService = require("./rajaOngkirService"); // Tidak butuh lagi untuk booking
 
 class TransactionService {
   _generateOrderId() {
     return `TRX-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+  }
+  async _calculateOrder(userId, checkoutData, transactionObj = null) {
+    const {
+      voucher_code,
+      shipping_cost, // e.g. 15000
+    } = checkoutData;
+
+    // 1. Ambil Data User & Keranjang
+    // Gunakan transactionObj jika ada (untuk locking saat checkout beneran)
+    const queryOptions = {
+      include: [
+        {
+          model: Carts,
+          as: "cart_items",
+          include: [
+            {
+              model: Products_Variant,
+              as: "variant",
+              include: [{ model: Products, as: "product" }],
+            },
+          ],
+        },
+      ],
+    };
+
+    if (transactionObj) {
+      queryOptions.transaction = transactionObj;
+      queryOptions.lock = transactionObj.LOCK.UPDATE;
+    }
+
+    const user = await User.findByPk(userId, queryOptions);
+
+    if (!user.cart_items || user.cart_items.length === 0) {
+      throw new Error("Keranjang Anda kosong.");
+    }
+
+    // 2. Validasi Stok & Hitung Subtotal Item
+    const validItems = [];
+    let subtotal_items = 0;
+    let totalWeight = 0;
+
+    for (const item of user.cart_items) {
+      const variant = item.variant;
+      if (!variant) continue;
+
+      // Jika sedang checkout beneran (ada transactionObj), cek stok real-time di DB
+      // Jika cuma prepare (preview), pakai data dari eager loading user saja biar cepat
+      let currentStock = variant.stock;
+
+      if (transactionObj) {
+        const lockedVariant = await Products_Variant.findByPk(variant.id, {
+          transaction: transactionObj,
+          lock: transactionObj.LOCK.UPDATE,
+        });
+        if (!lockedVariant) continue;
+        currentStock = lockedVariant.stock;
+      }
+
+      if (currentStock < item.quantity) {
+        throw new Error(
+          `Stok ${variant.product.name} tidak mencukupi (Sisa: ${currentStock}).`
+        );
+      }
+
+      validItems.push(item);
+      subtotal_items += item.quantity * variant.price;
+      totalWeight += item.quantity * variant.product.weight_grams;
+    }
+
+    if (validItems.length === 0)
+      throw new Error("Tidak ada item valid dalam keranjang.");
+
+    // 3. Hitung Diskon Voucher (Jika Ada)
+    let discountAmount = 0;
+
+    if (voucher_code) {
+      // A. Cek Ketersediaan Voucher
+      const voucher = await Vouchers.findOne({
+        where: {
+          code: voucher_code,
+          is_active: 1,
+        },
+      });
+
+      if (!voucher) {
+        throw new Error("Kode Voucher tidak ditemukan atau tidak aktif.");
+      }
+
+      // B. Cek Kuota
+      if (voucher.quota <= 0) {
+        throw new Error("Kuota voucher ini sudah habis.");
+      }
+
+      // C. Cek Masa Berlaku
+      const now = new Date();
+      const startDate = new Date(voucher.start_date);
+      const endDate = new Date(voucher.end_date);
+
+      if (now < startDate) throw new Error("Voucher belum dimulai.");
+      if (now > endDate) throw new Error("Voucher sudah kadaluarsa.");
+
+      // D. Cek Minimal Pembelian (Berdasarkan Subtotal Produk)
+      if (subtotal_items < parseFloat(voucher.min_purchase)) {
+        throw new Error(
+          `Maaf, voucher ini butuh minimal belanja Rp ${parseInt(
+            voucher.min_purchase
+          ).toLocaleString("id-ID")}`
+        );
+      }
+
+      // E. Cek Pemakaian User (Opsional: Jika user cuma boleh pakai 1x)
+      // const used = await Transaction.findOne({ where: { user_id: userId, voucher_code: voucher_code, status: {[Op.not]: 'cancelled'} } });
+      // if (used) throw new Error("Anda sudah pernah menggunakan voucher ini.");
+
+      // F. Hitung Nominal Diskon
+      let calculatedDisc = 0;
+
+      if (voucher.type === "percentage") {
+        // Rumus: Subtotal * (Value / 100)
+        calculatedDisc = subtotal_items * (parseFloat(voucher.value) / 100);
+
+        // Cek Max Discount (Cap)
+        if (
+          voucher.max_discount &&
+          calculatedDisc > parseFloat(voucher.max_discount)
+        ) {
+          calculatedDisc = parseFloat(voucher.max_discount);
+        }
+      } else {
+        // Fixed Amount
+        calculatedDisc = parseFloat(voucher.value);
+      }
+
+      // Safety: Diskon tidak boleh lebih besar dari harga barang
+      if (calculatedDisc > subtotal_items) {
+        calculatedDisc = subtotal_items;
+      }
+
+      discountAmount = calculatedDisc;
+    }
+
+    // 4. Hitung Komponen Biaya Lain
+    const parsedShippingCost = parseFloat(shipping_cost) || 0;
+    const parsedServiceFee = 0; // Bisa diatur dinamis nanti
+
+    // 5. Grand Total
+    // Rumus: Item + Ongkir + Jasa - Diskon
+    let grandTotalValue =
+      subtotal_items + parsedShippingCost + parsedServiceFee - discountAmount;
+    if (grandTotalValue < 0) grandTotalValue = 0;
+
+    // 6. Ambil Alamat (Untuk Snapshot)
+    const address = await Address.findOne({ where: { user_id: userId } });
+    if (!address) throw new Error("Alamat pengiriman belum diatur.");
+    const shopAddress = await shopAddressRepository.findDefaultShopAddress();
+    if (!shopAddress)
+      throw new Error("Alamat toko (pengirim) belum diatur oleh admin.");
+
+    return {
+      user,
+      address,
+      shopAddress,
+      validItems,
+      subtotal_items,
+      totalWeight,
+      shipping_cost: parsedShippingCost,
+      service_fee: parsedServiceFee,
+      discount_amount: discountAmount,
+      grand_total: grandTotalValue,
+    };
   }
 
   async getUserTransactions(userId, queryParams) {
@@ -133,150 +305,66 @@ class TransactionService {
       throw new Error(error.message);
     }
   }
+
+  async prepareTransaction(userId, checkoutData) {
+    // Panggil fungsi hitung tanpa Transaction DB (Read Only)
+    const calculation = await this._calculateOrder(userId, checkoutData);
+
+    return {
+      items: calculation.validItems.map((item) => ({
+        product_name: item.variant.product.name,
+        variant_name: `${item.variant.color} ${item.variant.size}`,
+        price: item.variant.price,
+        quantity: item.quantity,
+        total: item.variant.price * item.quantity,
+        image: item.variant.product.product_images
+          ? item.variant.product.product_images[0]
+          : null,
+      })),
+      cost_breakdown: {
+        subtotal_product: calculation.subtotal_items,
+        shipping_cost: calculation.shipping_cost,
+        service_fee: calculation.service_fee,
+        discount_amount: calculation.discount_amount,
+        grand_total: calculation.grand_total,
+      },
+      shipping_address: calculation.address,
+      sender_address: calculation.shopAddress,
+      estimated_weight: calculation.totalWeight,
+    };
+  }
   async createTransaction(userId, checkoutData) {
     const {
-      voucher_code,
-      shipping_code, // e.g. "wahana"
-      shipping_service, // e.g. "Express"
-      shipping_cost, // e.g. 15000
+      shipping_code, // e.g. "jne"
+      shipping_service, // e.g. "REG"
     } = checkoutData;
 
     const t = await sequelize.transaction();
     try {
-      // A. Ambil Data User & Keranjang
-      const user = await User.findByPk(userId, {
-        include: [
-          {
-            model: Carts,
-            as: "cart_items",
-            include: [
-              {
-                model: Products_Variant,
-                as: "variant",
-                include: [{ model: Products, as: "product" }],
-              },
-            ],
-          },
-        ],
-        transaction: t,
-        lock: t.LOCK.UPDATE,
-      });
+      // A. Panggil Logic Hitung (Dengan Lock Transaction DB)
+      // Ini akan otomatis cek stok real-time & kunci baris DB agar aman dari race condition
+      const calc = await this._calculateOrder(userId, checkoutData, t);
 
-      if (!user.cart_items || user.cart_items.length === 0) {
-        throw new Error("Keranjang Anda kosong.");
-      }
-
-      if (voucher_code) {
-        // 1. CEK KETERSEDIAAN: Apakah voucher ada di database?
-        const voucher = await Vouchers.findOne({
-          where: { code: voucher_code },
-          transaction: t,
-        });
-
-        if (!voucher) {
-          throw new Error("Kode Voucher tidak ditemukan.");
-        }
-
-        // 2. CEK MASA BERLAKU: Apakah tanggalnya valid?
-        const now = new Date();
-        const startDate = new Date(voucher.start_date);
-        const endDate = new Date(voucher.end_date);
-
-        if (now < startDate) throw new Error("Voucher belum bisa digunakan.");
-        if (now > endDate) throw new Error("Voucher sudah kadaluarsa.");
-
-        // 3. CEK RIWAYAT PEMAKAIAN (Barrier 1x Pakai)
-        // Kita cari di tabel Transaction:
-        // "Adakah transaksi milik User ini, dengan Voucher Code ini, yang statusnya BUKAN cancelled?"
-        const alreadyUsed = await Transaction.findOne({
-          where: {
-            user_id: userId,
-            voucher_code: voucher_code, // Pastikan kolom ini ada di DB
-            status: {
-              [Op.not]: "cancelled", // Kalau order sebelumnya batal, boleh pakai lagi
-            },
-          },
-          transaction: t,
-        });
-
-        if (alreadyUsed) {
-          throw new Error(
-            "Anda sudah pernah menggunakan voucher ini sebelumnya."
-          );
-        }
-
-        // 4. HITUNG DISKON
-        // Jika lolos semua cek di atas, baru hitung potongannya
-        if (voucher.type === "percentage") {
-          // Contoh: 10% dari total harga barang
-          discountAmount = subtotal_items * (voucher.value / 100);
-        } else if (voucher.type === "fixed") {
-          // Contoh: Potongan Rp 10.000
-          discountAmount = parseFloat(voucher.value);
-        }
-
-        // Validasi agar diskon tidak melebihi harga barang
-        if (discountAmount > subtotal_items) {
-          discountAmount = subtotal_items;
-        }
-      }
-
-      // B. Validasi Stok & Hitung Harga
-      const validItems = [];
-      let subtotal_items = 0;
-
-      for (const item of user.cart_items) {
-        const variant = item.variant;
-        if (!variant) continue;
-
-        const lockedVariant = await Products_Variant.findByPk(variant.id, {
-          transaction: t,
-          lock: t.LOCK.UPDATE,
-        });
-
-        if (!lockedVariant) continue;
-        if (lockedVariant.stock < item.quantity) {
-          throw new Error(`Stok ${variant.product.name} habis.`);
-        }
-
-        validItems.push(item);
-        subtotal_items += item.quantity * variant.price;
-      }
-
-      if (validItems.length === 0) throw new Error("Tidak ada item valid.");
-
-      // C. Ambil Alamat User
-      const address = await Address.findOne({ where: { user_id: userId } });
-      if (!address) throw new Error("Alamat pengiriman tidak ditemukan.");
-      const shippingAddressSnapshot = JSON.stringify(address);
-
-      // D. Kalkulasi Biaya
-      const parsedShippingCost = parseFloat(shipping_cost) || 0;
-      const parsedServiceFee = 0; // Manual, jadi tidak ada fee sistem otomatis
-      const discountAmount = 0;
-
-      const grandTotalValue =
-        subtotal_items + parsedShippingCost + parsedServiceFee - discountAmount;
-
-      // E. Simpan Transaksi ke DB
+      // B. Simpan Transaksi ke DB
       const orderId = this._generateOrderId();
+      const shippingAddressSnapshot = JSON.stringify(calc.address);
 
       const newTransaction = await Transaction.create(
         {
           order_id_display: orderId,
           user_id: userId,
 
-          total_price: subtotal_items,
-          shipping_cost: parsedShippingCost,
-          service_fee: parsedServiceFee,
-          discount_amount: discountAmount,
-          grand_total: grandTotalValue,
+          total_price: calc.subtotal_items,
+          shipping_cost: calc.shipping_cost,
+          service_fee: calc.service_fee,
+          discount_amount: calc.discount_amount,
+          grand_total: calc.grand_total,
 
           shipping_address: shippingAddressSnapshot,
 
           courier: shipping_code,
           shipping_service: shipping_service,
-          shipping_code: shipping_code,
+          shipping_code: shipping_code, // Simpan kode kurir juga
 
           status: "pending",
           payment_method: "BANK TRANSFER",
@@ -285,8 +373,8 @@ class TransactionService {
         { transaction: t }
       );
 
-      // F. Simpan Detail Item & Kurangi Stok
-      for (const item of validItems) {
+      // C. Simpan Detail Item & Kurangi Stok
+      for (const item of calc.validItems) {
         const variant = item.variant;
 
         await TransactionDetail.create(
@@ -301,6 +389,7 @@ class TransactionService {
           { transaction: t }
         );
 
+        // Kurangi Stok
         await Products_Variant.decrement("stock", {
           by: item.quantity,
           where: { id: variant.id },
@@ -308,36 +397,34 @@ class TransactionService {
         });
       }
 
+      // D. Hapus Keranjang
       await Carts.destroy({ where: { user_id: userId }, transaction: t });
 
-      // G. Integrasi Midtrans (Dummy)
+      // E. Integrasi Midtrans
       const midtransParams = {
         transaction_details: {
           order_id: orderId,
-          gross_amount: Math.round(grandTotalValue), // Midtrans menolak desimal
+          gross_amount: Math.round(calc.grand_total),
         },
         customer_details: {
-          first_name: user.name,
-          email: user.email,
-          phone: user.phone_number,
+          first_name: calc.user.name,
+          email: calc.user.email,
+          phone: calc.user.phone_number,
         },
         item_details: [
-          // Opsional: Bisa dikosongkan jika ribet, tapi bagus kalau ada
           {
             id: "TRX-TOTAL",
-            price: Math.round(grandTotalValue),
+            price: Math.round(calc.grand_total),
             quantity: 1,
-            name: "Total Pembayaran Order",
+            name: "Total Pembayaran",
           },
         ],
       };
 
-      // Minta Link ke Midtrans
       const midtransResponse = await midtransService.createTransaction(
         midtransParams
       );
 
-      // Simpan Token ke DB
       await newTransaction.update(
         { midtrans_token: midtransResponse.token },
         { transaction: t }

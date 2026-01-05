@@ -14,7 +14,13 @@ const {
   Village,
 } = require("../models");
 // 1. Buat instance axios untuk API Komerce
-
+function parseEtd(etd) {
+  if (!etd || typeof etd !== "string" || etd.trim() === "") return 99;
+  // Ambil angka pertama yang muncul (misal "2-3 Hari" -> ambil "2")
+  const match = etd.match(/^(\d+)/);
+  if (match && match[1]) return parseInt(match[1], 10);
+  return 99; // Kalau tidak ada angka, taruh di urutan paling belakang
+}
 // Perhatikan baseURL BARU
 const komerceApi = axios.create({
   baseURL: "https://rajaongkir.komerce.id/api/v1",
@@ -188,7 +194,7 @@ class RajaOngkirService {
    * @param {string} weight - Berat dalam gram (dari req.body)
    */
   async getShippingCost(userId) {
-    // 1. Dapatkan Alamat Asal (Toko)
+    // 1. Ambil Barang di Keranjang
     const items = await Carts.findAll({
       where: { user_id: userId },
       include: [
@@ -196,122 +202,68 @@ class RajaOngkirService {
           model: Products_Variant,
           as: "variant",
           include: [
-            {
-              model: Products,
-              as: "product",
-              attributes: ["weight_grams"], // Kita hanya butuh beratnya
-            },
+            { model: Products, as: "product", attributes: ["weight_grams"] },
           ],
         },
       ],
     });
 
-    if (!items || items.length === 0) {
-      throw new Error("Your cart is empty.");
-    }
+    if (!items || items.length === 0) throw new Error("Keranjang kosong");
 
-    // b. Akumulasikan berat
+    // 2. Hitung Berat Total
     let totalWeight = 0;
     for (const item of items) {
-      // Gunakan optional chaining (?) untuk keamanan
-      const itemWeight = item.variant?.product?.weight_grams;
-      if (itemWeight && itemWeight > 0) {
-        totalWeight += itemWeight * item.quantity;
-      }
+      const w = item.variant?.product?.weight_grams;
+      if (w) totalWeight += w * item.quantity;
     }
+    if (totalWeight === 0) totalWeight = 1000; // Minimal 1kg
 
-    if (totalWeight <= 0) {
-      throw new Error("Cart is empty or items in cart have no weight defined.");
-    }
-
-    // c. Gunakan 'totalWeight' sebagai 'weight' untuk API
-    const weight = totalWeight;
-
+    // 3. Ambil Alamat Toko & User
     const shopAddress = await shopAddressRepository.findDefaultShopAddress();
-    if (!shopAddress || !shopAddress.district_id) {
-      throw new Error("Alamat asal toko belum diatur oleh admin.");
-    }
-    const originDistrictId = shopAddress.district_id;
-
-    // 2. Dapatkan Alamat Tujuan (Pelanggan)
     const userAddress = await Address.findOne({ where: { user_id: userId } });
-    if (!userAddress || !userAddress.district_id) {
-      throw new Error(
-        "Alamat pelanggan tidak ditemukan atau tidak lengkap (membutuhkan district_id)."
-      );
-    }
-    const destinationDistrictId = userAddress.district_id;
 
-    // 3. Panggil API Komerce (sesuai cURL Anda)
+    if (!shopAddress) throw new Error("Alamat toko belum diatur Admin.");
+    if (!userAddress) throw new Error("Alamat pengiriman user belum lengkap.");
+
     try {
       const params = new URLSearchParams();
-      params.append("origin", originDistrictId);
-      params.append("destination", destinationDistrictId);
-      params.append("weight", weight);
-      params.append(
-        "courier",
-        "jne:sicepat:ide:sap:jnt:ninja:tiki:lion:anteraja:pos:ncs:rex:rpx:sentral:star:wahana:dse"
-      );
+      params.append("origin", shopAddress.district_id);
+      params.append("destination", userAddress.district_id);
+      params.append("weight", totalWeight);
 
+      // 🔥 PERBAIKAN DISINI 🔥
+      // Salah: "jne:sicepat:jnt:idexpress"
+      // Benar: "jne:sicepat:jnt:ide" (ID Express kodenya 'ide')
+      params.append("courier", "jne:sicepat:jnt:ide");
+
+      // Hitung via API Komerce
       const response = await komerceApi.post(
         "/calculate/district/domestic-cost",
-        params, // Kirim sebagai form-urlencoded
-        {
-          headers: {
-            "Content-Type": "application/x-www-form-urlencoded",
-          },
-        }
+        params
       );
+      const rawResults = response.data.data;
 
-      const rawResults = response.data.data; // Ini adalah array
+      if (!Array.isArray(rawResults)) return { data: [] };
 
-      if (!Array.isArray(rawResults)) {
-        // Jika Komerce mengembalikan error atau format aneh
-        return response.data;
-      }
-
-      // 4. Bersihkan, Ubah, dan Filter data
+      // 4. Filter & Sort Hasil
       const cleanedResults = rawResults
-        .map((item) => {
-          // "Tiki Motor..." memiliki cost 1,000,000+. Kita buang.
-          // "J&T EZ" memiliki ETD "" (string kosong). Kita parse.
-          const parsedEtd = this._parseEtd(item.etd);
+        .map((item) => ({
+          ...item,
+          parsedEtd: parseEtd(item.etd),
+        }))
+        .filter((i) => i.cost > 0 && i.cost < 2000000 && i.parsedEtd < 99)
+        .sort((a, b) => a.cost - b.cost);
 
-          return {
-            ...item,
-            parsedEtd: parsedEtd, // Tambah properti baru untuk sortir
-          };
-        })
-        .filter(
-          (item) =>
-            item.cost > 0 && // Buang jika gratis (tidak logis)
-            item.cost < 500000 && // Buang layanan kargo/motor (Rp 1jt+)
-            item.parsedEtd < 99 // Buang yang ETD-nya kosong/tidak jelas
-        );
-
-      // 5. Sortir data (sesuai kriteria Anda)
-      // Kriteria 1: "cost" termurah
-      // Kriteria 2: "etd" tercepat
-      cleanedResults.sort((a, b) => {
-        if (a.cost < b.cost) return -1; // Biaya termurah didahulukan
-        if (a.cost > b.cost) return 1;
-
-        // Jika biaya sama, dahulukan yang tercepat
-        if (a.parsedEtd < b.parsedEtd) return -1;
-        if (a.parsedEtd > b.parsedEtd) return 1;
-
-        return 0; // Jika semua sama
-      });
-
-      // 6. Ambil 3 terbaik
-      const top3Results = cleanedResults.slice(0, 3);
-
-      // 7. Kembalikan data yang sudah difilter
-      // Kita modifikasi respons aslinya
-      response.data.data = top3Results;
-      return response.data;
+      return {
+        origin: response.data.origin,
+        destination: response.data.destination,
+        results: cleanedResults.slice(0, 3), // Ambil Top 3
+      };
     } catch (error) {
-      throw new Error(`Komerce API Error (Cost): ${error.message}`);
+      console.error("Ongkir API Error:", error.response?.data || error.message);
+      // Tampilkan pesan error asli dari API agar lebih mudah debug
+      const msg = error.response?.data?.meta?.message || error.message;
+      throw new Error(`Gagal Cek Ongkir: ${msg}`);
     }
   }
   /**
