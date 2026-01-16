@@ -62,7 +62,7 @@ const KategoriModal = ({ category, onClose, onSave }) => {
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Nama Kategori <span className="text-red-500">*</span>
+              Categories <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
@@ -90,7 +90,7 @@ const KategoriModal = ({ category, onClose, onSave }) => {
 
           <div className="mb-6">
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Deskripsi
+              Description
             </label>
             <textarea
               name="description"
@@ -107,13 +107,13 @@ const KategoriModal = ({ category, onClose, onSave }) => {
               onClick={onClose}
               className="py-2 px-4 bg-gray-200 hover:bg-gray-300 rounded-lg"
             >
-              Batal
+              Cancel
             </button>
             <button
               type="submit"
               className="py-2 px-4 bg-theme-primary hover:bg-theme-primary-dark text-white rounded-lg"
             >
-              Simpan
+              Save
             </button>
           </div>
         </form>

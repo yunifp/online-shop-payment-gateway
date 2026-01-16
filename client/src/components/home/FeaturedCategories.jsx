@@ -18,7 +18,7 @@ const FeaturedCategories = () => {
   if (error) return null; 
 
   return (
-    <section className="bg-content-bg py-16 md:py-20">
+    <section className="bg-content-bg/30 py-16 md:py-20">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <h2 className="text-3xl font-bold text-center text-text-main mb-12">
           Explore

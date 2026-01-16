@@ -63,6 +63,8 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         allowNull: false,
       },
+      sub_district_id: { type: DataTypes.BIGINT, allowNull: false },
+      sub_district_name: { type: DataTypes.STRING, allowNull: false },
       postal_code: {
         type: DataTypes.STRING,
         allowNull: false,

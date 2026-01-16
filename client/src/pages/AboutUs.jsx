@@ -1,18 +1,17 @@
-import React from 'react';
-import { Target, Users, MapPin, Phone } from 'lucide-react';
-import logo from '../assets/logo.jpg'; // Using your logo
+import React from "react";
+import { Target, Users, MapPin, Phone } from "lucide-react";
+import logo from "../assets/logo.webp";
 
 const AboutUs = () => {
   return (
-    <div className="bg-content-bg">
+    <div className="bg-content-bg/30">
       {/* 1. Hero Section */}
       <section className="bg-black border-b border-border-main py-24 text-center">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="text-5xl text-white font-bold mb-4">
-            About Us
-          </h1>
+          <h1 className="text-5xl text-white font-bold mb-4">About Us</h1>
           <p className="text-xl text-white text-text-muted max-w-2xl mx-auto">
-            Get to know Rockstar Climbing Hold Indonesia and our passion for the vertical world.
+            Get to know Rockstar Climbing Hold Indonesia and our passion for the
+            world of climbing and movement.
           </p>
         </div>
       </section>
@@ -28,10 +27,13 @@ const AboutUs = () => {
                 <h2 className="text-3xl font-semibold">Our Vision</h2>
               </div>
               <p className="text-text-muted">
-                To be Indonesia's leading provider of climbing holds and outdoor equipment, inspiring everyone to explore their limits safely and confidently.
+                To become Indonesia’s leading local manufacturer of climbing
+                holds and training equipment — creating safe, durable, and
+                innovative products that support the growth of climbing gyms,
+                athletes, and climbing communities across the nation.
               </p>
             </div>
-            
+
             {/* Our Mission */}
             <div className="bg-white h-full p-8 rounded-lg shadow-sm border border-border-main">
               <div className="flex items-center text-theme-primary-dark mb-4">
@@ -39,7 +41,11 @@ const AboutUs = () => {
                 <h2 className="text-3xl font-semibold">Our Mission</h2>
               </div>
               <p className="text-text-muted">
-                We are committed to delivering high-quality products, expert customer service, and building a community that values environmental sustainability and safety in every adventure.
+                We are committed to designing and producing ergonomic and
+                reliable climbing holds, delivering professional customer
+                support, and building an inclusive climbing ecosystem that
+                prioritizes safety, sustainability, and community development in
+                every adventure and training session.
               </p>
             </div>
           </div>
@@ -51,21 +57,40 @@ const AboutUs = () => {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row items-center gap-12">
             <div className="md:w-1/2">
-              <img 
-                src={logo} 
-                alt="Rockstar Climbing Hold Logo" 
+              <img
+                src={logo}
+                alt="Rockstar Climbing Hold Logo"
                 className="rounded-lg shadow-lg w-full max-w-md mx-auto"
               />
             </div>
             <div className="md:w-1/2">
-              <h2 className="text-4xl font-bold text-white mb-6">
-                Our Story
-              </h2>
+              <h2 className="text-4xl font-bold text-white mb-6">Our Story</h2>
+
               <p className="text-text-muted text-white text-lg mb-4">
-                Born from a deep love for rock climbing and the great outdoors, Rockstar Climbing Hold Indonesia was founded in [Year]...
+                Rockstar Climbing Hold Indonesia was born from a deep passion
+                for climbing and the desire to create high–quality climbing
+                holds proudly made in Indonesia. Starting from a small workshop,
+                we began developing shapes, textures, and grip variations
+                tailored to the needs of climbing gyms, athletes, and route
+                setters across the country.
               </p>
+
               <p className="text-white text-text-muted opacity-80">
-                (Placeholder for company history. Describe how the company started, the core values you uphold, and your dedication to quality and the climbing community in Indonesia.)
+                From the beginning, we believed that every climbing hold should
+                not only be functional, but also durable, ergonomic, and safe to
+                use. Each Rockstar product goes through a careful design
+                process, strength testing, and detailed finishing to ensure a
+                comfortable grip experience for all climbing styles — from
+                beginners to professionals.
+              </p>
+
+              <p className="text-white text-text-muted opacity-80 mt-4">
+                Today, Rockstar Climbing Hold continues to grow alongside the
+                Indonesian climbing community. We proudly support climbing gyms,
+                training programs, competitions, and local route development —
+                proving that locally crafted products can be competitive,
+                reliable, and impactful for the growth of climbing culture in
+                Indonesia.
               </p>
             </div>
           </div>
@@ -78,24 +103,46 @@ const AboutUs = () => {
           <h2 className="text-3xl font-bold text-text-main mb-10">
             Visit Our Workshop
           </h2>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
             <div className="bg-white p-6 rounded-lg shadow-sm border border-border-main flex items-start">
-              <MapPin size={24} className="text-theme-primary-dark mr-4 mt-1 flex-shrink-0" />
+              <MapPin
+                size={24}
+                className="text-theme-primary-dark mr-4 mt-1 flex-shrink-0"
+              />
               <div>
-                <h3 className="text-lg font-semibold text-left text-text-main">Physical Address</h3>
+                <h3 className="text-lg font-semibold text-left text-text-main">
+                  Physical Address
+                </h3>
                 <p className="text-text-muted text-left">
-                  (Placeholder) 123 Adventure St., Jakarta, Indonesia 12345
+                  JL. Lapang Rt 004 Rw 002 (Komplek Pabrik Soun)
+                  <br />
+                  Karangsoka, Bantarwuni, Kembaran, Banyumas
+                  <br />
+                  Central Java — 53181
                 </p>
               </div>
             </div>
+
             <div className="bg-white p-6 rounded-lg shadow-sm border border-border-main flex items-start">
-              <Phone size={24} className="text-theme-primary-dark mr-4 mt-1 flex-shrink-0" />
+              <Phone
+                size={24}
+                className="text-theme-primary-dark mr-4 mt-1 flex-shrink-0"
+              />
               <div>
-                <h3 className="text-lg font-semibold text-left text-text-main">Get in Touch</h3>
+                <h3 className="text-lg font-semibold text-left text-text-main">
+                  Get in Touch
+                </h3>
                 <p className="text-text-muted text-left">
-                  JL. Lapang Rt 004 Rw 002 (Komplek Pabrik Soun)
-                  Karangsoka,Bantarwuni,Kembaran,Banyumas,Jawa Tengah 53181<br/>
-                  Phone: +62 88806123456<br/>
+                  Phone:&nbsp;
+                  <a
+                    href="https://wa.me/6288806123456"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className=" hover:text-blue-600"
+                  >
+                    +62 88806123456
+                  </a>
                 </p>
               </div>
             </div>

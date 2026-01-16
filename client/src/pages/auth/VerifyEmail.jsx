@@ -48,15 +48,15 @@ const VerifyEmail = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-content-bg p-6">
+    <div className="bg-content-bg/30 min-h-screen flex items-center justify-center p-6">
       <div className="w-full max-w-md bg-white p-8 rounded-2xl shadow-lg text-center animate-in fade-in zoom-in duration-300">
         <div className="w-16 h-16 bg-theme-primary/10 text-theme-primary rounded-full flex items-center justify-center mx-auto mb-6">
           <ShieldCheck size={32} />
         </div>
         
-        <h1 className="text-2xl font-bold text-text-main mb-2">Verifikasi Akun</h1>
+        <h1 className="text-2xl font-bold text-text-main mb-2">Verify Account</h1>
         <p className="text-text-muted mb-8">
-          Masukkan 6 digit kode OTP yang telah dikirimkan ke email Anda.
+          Enter the 6-digit OTP code sent to your email.
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-8">
@@ -80,19 +80,19 @@ const VerifyEmail = () => {
             disabled={loading || otp.includes('')}
             className="w-full bg-theme-primary text-white font-semibold py-3 rounded-xl shadow-md hover:bg-theme-primary-dark transition-all disabled:opacity-50 flex justify-center items-center"
           >
-            {loading ? 'Memverifikasi...' : 'Verifikasi Akun'}
+            {loading ? 'Verifying...' : 'Verify Account'}
           </button>
         </form>
 
         <div className="mt-8 pt-6 border-t border-border-main">
-          <p className="text-text-muted text-sm mb-4">Tidak menerima kode?</p>
+          <p className="text-text-muted text-sm mb-4">Didn't receive the code?</p>
           <button
             onClick={handleResend}
             disabled={loading}
             className="flex items-center justify-center mx-auto text-theme-primary font-medium hover:text-theme-primary-dark transition-colors disabled:opacity-50"
           >
             <RefreshCcw size={16} className={`mr-2 ${loading ? 'animate-spin' : ''}`} />
-            Kirim Ulang Kode
+            Resend Code
           </button>
         </div>
       </div>

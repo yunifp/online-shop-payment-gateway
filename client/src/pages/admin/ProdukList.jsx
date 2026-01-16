@@ -119,13 +119,13 @@ const ProdukList = () => {
 
       <div className="bg-content-bg shadow-xl rounded-xl p-4 md:p-6">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-          <h1 className="text-3xl font-bold text-text-main">List Produk</h1>
+          <h1 className="text-3xl font-bold text-text-main">List Products</h1>
           <button
             onClick={() => handleOpenModal(null)}
             className="flex items-center bg-theme-primary hover:bg-theme-primary-dark text-white font-medium py-2 px-5 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
           >
             <FaPlus className="mr-2" />
-            Tambah Produk
+            Add Product
           </button>
         </div>
 
@@ -137,31 +137,31 @@ const ProdukList = () => {
                   scope="col"
                   className="px-6 py-4 text-left text-xs font-semibold text-text-muted uppercase tracking-wider"
                 >
-                  Gambar
+                  Image
                 </th>
                 <th
                   scope="col"
                   className="px-6 py-4 text-left text-xs font-semibold text-text-muted uppercase tracking-wider"
                 >
-                  Nama Produk
+                  Product Name
                 </th>
                 <th
                   scope="col"
                   className="px-6 py-4 text-left text-xs font-semibold text-text-muted uppercase tracking-wider"
                 >
-                  Kategori
+                  Category
                 </th>
                 <th
                   scope="col"
                   className="px-6 py-4 text-left text-xs font-semibold text-text-muted uppercase tracking-wider"
                 >
-                  Harga (Mulai dari)
+                  Price (Starting from)
                 </th>
                 <th
                   scope="col"
                   className="px-6 py-4 text-left text-xs font-semibold text-text-muted uppercase tracking-wider"
                 >
-                  Total Stok
+                  Total Stocks
                 </th>
                 <th
                   scope="col"
@@ -173,7 +173,7 @@ const ProdukList = () => {
                   scope="col"
                   className="px-6 py-4 text-right text-xs font-semibold text-text-muted uppercase tracking-wider"
                 >
-                  Aksi
+                  Actions
                 </th>
               </tr>
             </thead>

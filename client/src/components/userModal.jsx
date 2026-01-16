@@ -53,7 +53,7 @@ const UserModal = ({ user, onClose, onSave }) => {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Nama Lengkap <span className="text-red-500">*</span>
+              Full Name<span className="text-red-500">*</span>
             </label>
             <input
               type="text"
@@ -117,13 +117,13 @@ const UserModal = ({ user, onClose, onSave }) => {
               onClick={onClose}
               className="py-2 px-4 bg-gray-200 hover:bg-gray-300 rounded-lg"
             >
-              Batal
+              Cancel
             </button>
             <button
               type="submit"
               className="py-2 px-4 bg-theme-primary hover:bg-theme-primary-dark text-white rounded-lg"
             >
-              Simpan
+              Save
             </button>
           </div>
         </form>

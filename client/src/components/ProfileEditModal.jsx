@@ -46,7 +46,7 @@ const ProfileEditModal = ({ profile, address, onClose, onRefresh }) => {
     <div className="fixed inset-0 bg-black/60 flex justify-center items-center z-[60] p-4 backdrop-blur-sm">
       <div className="bg-white rounded-3xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl">
         <div className="p-6 border-b flex justify-between items-center bg-gray-50">
-          <h2 className="text-xl font-bold">Edit Profil & Alamat</h2>
+          <h2 className="text-xl font-bold">Edit Profil & Address</h2>
           <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full"><X size={20}/></button>
         </div>
 
@@ -55,21 +55,21 @@ const ProfileEditModal = ({ profile, address, onClose, onRefresh }) => {
             <div className="p-4 bg-orange-50 border border-orange-100 rounded-xl flex gap-3">
               <AlertCircle className="text-orange-500" size={20} />
               <div>
-                <p className="text-sm font-bold text-orange-800">Akun Belum Verifikasi</p>
+                <p className="text-sm font-bold text-orange-800">Account Not Verified</p>
                 <button type="button" onClick={resendOTP} className="text-xs text-orange-600 font-bold hover:underline">
-                  {authLoading ? "Mengirim..." : "Kirim ulang kode OTP verifikasi →"}
+                  {authLoading ? "Sending..." : "Resend verification OTP →"}
                 </button>
               </div>
             </div>
           )}
 
           <div className="space-y-4">
-            <label className="text-blue-600 font-bold text-xs uppercase tracking-widest">Informasi Akun</label>
+            <label className="text-blue-600 font-bold text-xs uppercase tracking-widest">Informasi Account</label>
             <input type="text" name="name" value={formData.name} onChange={handleChange} placeholder="Nama Akun" className="w-full border p-3 rounded-xl outline-none" required />
           </div>
 
           <div className="space-y-4 pt-4 border-t">
-            <label className="text-red-500 font-bold text-xs uppercase tracking-widest">Alamat Pengiriman</label>
+            <label className="text-red-500 font-bold text-xs uppercase tracking-widest">Address</label>
             <div className="grid grid-cols-2 gap-4">
               <input type="text" name="recipient_name" value={formData.recipient_name} onChange={handleChange} placeholder="Nama Penerima" className="border p-3 rounded-xl" required />
               <input type="text" name="recipient_phone" value={formData.recipient_phone} onChange={handleChange} placeholder="No. Telepon" className="border p-3 rounded-xl" required />
@@ -88,7 +88,7 @@ const ProfileEditModal = ({ profile, address, onClose, onRefresh }) => {
           <div className="flex gap-4 pt-4">
             <button type="button" onClick={onClose} className="flex-1 py-4 border rounded-2xl font-bold text-gray-500">Batal</button>
             <button type="submit" disabled={loading} className="flex-1 py-4 bg-blue-600 text-white rounded-2xl font-bold flex justify-center items-center gap-2">
-              {loading ? <Loader2 className="animate-spin" /> : <Save size={20}/>} Simpan Semua
+              {loading ? <Loader2 className="animate-spin" /> : <Save size={20}/>} Save
             </button>
           </div>
         </form>

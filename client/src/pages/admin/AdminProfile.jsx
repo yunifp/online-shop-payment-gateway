@@ -47,15 +47,15 @@ const AdminProfile = () => {
     <div className="p-6">
       <div className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Pengaturan Toko</h1>
-          <p className="text-gray-500 text-sm mt-1">Kelola alamat pengiriman toko Anda.</p>
+          <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
+          <p className="text-gray-500 text-sm mt-1">Manage your store's delivery addresses.</p>
         </div>
         
         <button 
           onClick={handleAddClick}
           className="flex items-center justify-center px-4 py-2 bg-theme-primary text-white rounded-lg hover:bg-theme-primary-dark transition shadow-md"
         >
-          <Plus size={18} className="mr-2" /> Tambah Alamat Toko
+          <Plus size={18} className="mr-2" /> Add Shop Address
         </button>
       </div>
 
@@ -76,16 +76,13 @@ const AdminProfile = () => {
                         <Building2 size={20} />
                       </div>
                       <div>
-                        <h3 className="font-bold text-gray-900">{addr.name}</h3>
-                        <p className="text-xs text-gray-500 flex items-center mt-0.5">
-                          <Phone size={12} className="mr-1" /> {addr.phone_number}
-                        </p>
+                        <h3 className="font-bold text-gray-900">{addr.shop_name}</h3>
                       </div>
                     </div>
                     {/* Badge Utama (Opsional, jika ada field is_primary) */}
                     {addr.is_primary && (
                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                        <ShieldCheck size={12} className="mr-1" /> Utama
+                        <ShieldCheck size={12} className="mr-1" /> Primary
                       </span>
                     )}
                   </div>
@@ -108,7 +105,7 @@ const AdminProfile = () => {
                       onClick={() => deleteShopAddress(addr.id)}
                       className="flex-1 flex items-center justify-center py-2 text-sm font-medium text-red-600 bg-red-50 border border-transparent rounded-lg hover:bg-red-100 transition"
                     >
-                      <Trash2 size={16} className="mr-2" /> Hapus
+                      <Trash2 size={16} className="mr-2" /> Delete
                     </button>
                   </div>
                 </div>
@@ -117,10 +114,10 @@ const AdminProfile = () => {
           ) : (
             <div className="col-span-full text-center py-16 bg-white rounded-xl border border-dashed border-gray-300">
               <MapPin size={48} className="mx-auto text-gray-300 mb-3" />
-              <h3 className="text-lg font-medium text-gray-900">Belum ada alamat toko</h3>
-              <p className="text-gray-500 mb-4">Tambahkan alamat agar pelanggan tahu lokasi pengiriman.</p>
+              <h3 className="text-lg font-medium text-gray-900">No shop address yet</h3>
+              <p className="text-gray-500 mb-4">Add an address so customers know where to ship.</p>
               <button onClick={handleAddClick} className="text-theme-primary font-medium hover:underline">
-                + Tambah Alamat Sekarang
+                + Add Address Now
               </button>
             </div>
           )}

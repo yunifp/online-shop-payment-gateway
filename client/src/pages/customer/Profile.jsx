@@ -126,9 +126,9 @@ const Profile = () => {
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Profil Saya</h1>
+        <h1 className="text-2xl font-bold text-gray-900">My Profile</h1>
         <p className="text-gray-500 text-sm mt-1">
-          Kelola informasi akun dan alamat pengiriman Anda.
+          Manage your account and shipping address information.
         </p>
       </div>
 
@@ -149,19 +149,19 @@ const Profile = () => {
               {/* STATUS VERIFIKASI EMAIL */}
               {user?.is_email_verified ? (
                 <div className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200">
-                  <ShieldCheck size={14} className="mr-1" /> Terverifikasi
+                  <ShieldCheck size={14} className="mr-1" /> Verified
                 </div>
               ) : (
                 <div className="flex flex-col items-center gap-2">
                   <div className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 border border-yellow-200">
-                    <AlertTriangle size={14} className="mr-1" /> Belum Verifikasi
+                    <AlertTriangle size={14} className="mr-1" /> Not Verified
                   </div>
                   {/* TOMBOL DIGANTI DARI LINK KE BUTTON AGAR BISA HIT API */}
                   <button 
                     onClick={handleResendVerification}
                     className="text-xs font-semibold text-theme-primary hover:text-theme-primary-dark hover:underline transition-colors bg-transparent border-none cursor-pointer"
                   >
-                    Verifikasi Email Sekarang
+                    Verify Email Now
                   </button>
                 </div>
               )}
@@ -171,7 +171,7 @@ const Profile = () => {
             onClick={handleLogout}
             className="w-full flex items-center justify-center space-x-2 p-4 bg-red-50 text-red-600 rounded-xl hover:bg-red-100 transition duration-200 font-medium"
           >
-            <LogOut size={18} /> <span>Keluar Aplikasi</span>
+            <LogOut size={18} /> <span>Logout</span>
           </button>
         </div>
 
@@ -182,8 +182,7 @@ const Profile = () => {
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 sm:p-8">
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-lg font-bold text-gray-900 flex items-center">
-                <User size={20} className="mr-2 text-theme-primary" /> Informasi
-                Pribadi
+                <User size={20} className="mr-2 text-theme-primary" /> Personal Information
               </h3>
               <button
                 onClick={() => setIsEditingProfile(!isEditingProfile)}
@@ -195,11 +194,11 @@ const Profile = () => {
               >
                 {isEditingProfile ? (
                   <>
-                    <X size={16} className="mr-1" /> Batal
+                    <X size={16} className="mr-1" /> Cancel
                   </>
                 ) : (
                   <>
-                    <Edit2 size={16} className="mr-1" /> Edit Profil
+                    <Edit2 size={16} className="mr-1" /> Edit Profile
                   </>
                 )}
               </button>
@@ -208,7 +207,7 @@ const Profile = () => {
             <form onSubmit={handleSaveProfile} className="space-y-5">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Nama Lengkap
+                  Full Name
                 </label>
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
@@ -231,7 +230,7 @@ const Profile = () => {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Alamat Email
+                  Email Address
                 </label>
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
@@ -257,7 +256,7 @@ const Profile = () => {
                       "Menyimpan..."
                     ) : (
                       <>
-                        <Save size={18} className="mr-2" /> Simpan Perubahan
+                        <Save size={18} className="mr-2" /> Save Changes
                       </>
                     )}
                   </button>

@@ -12,7 +12,7 @@ const formatCurrency = (amount) => {
 
 const CartDropdown = ({ isOpen, items = [], subtotal = 0 }) => {
   const API_URL = import.meta.env.VITE_API_URL;
-  const BASE_URL = API_URL ? API_URL.split('/api')[0] : '';
+  const BASE_URL = API_URL ? API_URL.split('/api/v1')[0] : '';
 
   const constructImageUrl = (path) => {
     if (!path) return null;
@@ -50,7 +50,7 @@ const CartDropdown = ({ isOpen, items = [], subtotal = 0 }) => {
                     <img
                         src={constructImageUrl(item.image_url)}
                         alt={item.product_name}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-fill"
                         onError={(e) => {
                             e.target.onerror = null;
                             e.target.src = "https://placehold.co/64x64?text=No+Img";

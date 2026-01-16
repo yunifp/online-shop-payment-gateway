@@ -35,6 +35,7 @@ import CompleteProfile from "./pages/customer/CompleteProfile";
 import CustomerProfile from "./pages/customer/Profile";
 import ForgotPassword from "./pages/auth/ForgotPassword";
 import ResetPassword from "./pages/auth/ResetPassword";
+import Payment from "./pages/Payment";
 // Components
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -55,7 +56,7 @@ function App() {
         <Route path="register" element={<Register />} />
         <Route path="forgot-password" element={<ForgotPassword />} />
         <Route path="reset-password" element={<ResetPassword />} />
-
+        <Route path="payment" element={<Payment />} />
         {/* Complete Profile (requires login but not role-specific) */}
       </Route>
       <Route

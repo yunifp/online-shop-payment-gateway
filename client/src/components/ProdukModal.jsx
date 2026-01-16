@@ -192,7 +192,7 @@ const ProdukModal = ({ product, categories, onClose, onSave, slugify }) => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Nama Produk <span className="text-red-500">*</span>
+                Product Name <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
@@ -220,7 +220,7 @@ const ProdukModal = ({ product, categories, onClose, onSave, slugify }) => {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Deskripsi <span className="text-red-500">*</span>
+              Description <span className="text-red-500">*</span>
             </label>
             <textarea
               name="description"
@@ -235,7 +235,7 @@ const ProdukModal = ({ product, categories, onClose, onSave, slugify }) => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Kategori <span className="text-red-500">*</span>
+                Category <span className="text-red-500">*</span>
               </label>
               <select
                 name="category_id"
@@ -254,7 +254,7 @@ const ProdukModal = ({ product, categories, onClose, onSave, slugify }) => {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Berat (gram) <span className="text-red-500">*</span>
+                Weight (grams) <span className="text-red-500">*</span>
               </label>
               <input
                 type="number"
@@ -285,7 +285,7 @@ const ProdukModal = ({ product, categories, onClose, onSave, slugify }) => {
 
           <hr className="my-6" />
 
-          <h3 className="text-lg font-medium text-gray-900 mb-2">Varian Produk</h3>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">Product Variants</h3>
           
           <div className="space-y-4">
             {variants.map((variant, index) => (
@@ -338,7 +338,7 @@ const ProdukModal = ({ product, categories, onClose, onSave, slugify }) => {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Gambar Varian
+                    Product Images
                   </label>
                   
                   <div className="flex flex-wrap gap-2 mb-2">
@@ -396,7 +396,7 @@ const ProdukModal = ({ product, categories, onClose, onSave, slugify }) => {
             className="flex items-center text-sm text-theme-primary font-medium"
           >
             <FaPlus className="mr-2" size={12} />
-            Tambah Varian
+            add Variant
           </button>
 
           <div className="flex justify-end gap-3 pt-4">
@@ -405,13 +405,13 @@ const ProdukModal = ({ product, categories, onClose, onSave, slugify }) => {
               onClick={handleClose}
               className="py-2 px-4 bg-gray-200 hover:bg-gray-300 rounded-lg"
             >
-              Batal
+              Cancel
             </button>
             <button
               type="submit"
               className="py-2 px-4 bg-theme-primary hover:bg-theme-primary-dark text-white rounded-lg"
             >
-              Simpan
+              Save
             </button>
           </div>
         </form>

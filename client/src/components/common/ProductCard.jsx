@@ -33,7 +33,7 @@ const ProductCard = ({ product }) => {
     <div className="bg-content-bg rounded-lg shadow-sm border border-border-main overflow-hidden transition-all duration-300 hover:shadow-lg flex flex-col h-full">
       <Link to={`/product/${product.id}`} className="block flex-grow">
         {/* Kontainer Gambar */}
-        <div className="w-full h-48 bg-zinc-100 flex items-center justify-center overflow-hidden border-b border-border-main">
+        <div className="w-full h-60 bg-zinc-100 flex items-center justify-center overflow-hidden border-b border-border-main">
           {thumbUrl ? (
             <img 
               src={`${BASE_URL}${thumbUrl}`} 

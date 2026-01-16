@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   DollarSign,
   ReceiptText,
@@ -7,9 +7,9 @@ import {
   ShoppingBag,
   Clock
 } from 'lucide-react';
+import { useTransaction } from '../../hooks/useTransaction';
 
-
-const StatCard = ({ icon, title, value, description }) => {
+const StatCard = ({ icon, title, value, description, isLoading }) => {
   const IconComponent = icon;
   return (
     <div className="bg-content-bg p-6 rounded-2xl shadow-sm border border-border-main">
@@ -20,7 +20,11 @@ const StatCard = ({ icon, title, value, description }) => {
         <IconComponent size={20} className="text-text-subtle" />
       </div>
       <div>
-        <p className="text-4xl font-semibold text-text-main">{value}</p>
+        {isLoading ? (
+          <div className="h-8 w-24 bg-gray-200 animate-pulse rounded"></div>
+        ) : (
+          <p className="text-4xl font-semibold text-text-main">{value}</p>
+        )}
         {description && (
           <p className="text-sm text-text-muted mt-1">{description}</p>
         )}
@@ -29,9 +33,39 @@ const StatCard = ({ icon, title, value, description }) => {
   );
 };
 
+const formatCurrencyCompact = (value) => {
+  if (value >= 1000000000) {
+    return `Rp ${(value / 1000000000).toFixed(1)}M`;
+  }
+  if (value >= 1000000) {
+    return `Rp ${(value / 1000000).toFixed(1)}jt`;
+  }
+  return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(value);
+};
+
 const Dashboard = () => {
   const user = JSON.parse(localStorage.getItem("user"));
   const isUser = user?.role === 'user';
+  
+  const [stats, setStats] = useState({
+    revenue: 0,
+    transactions: 0,
+    shipping: 0
+  });
+  
+  const { getDashboardStats, loading } = useTransaction();
+
+  useEffect(() => {
+    if (!isUser) {
+      const fetchStats = async () => {
+        const data = await getDashboardStats();
+        if (data) {
+          setStats(data);
+        }
+      };
+      fetchStats();
+    }
+  }, [isUser]);
 
   if (isUser) {
     return (
@@ -62,9 +96,9 @@ const Dashboard = () => {
 
         <div className="mt-8 bg-content-bg p-6 rounded-2xl shadow-sm border border-border-main">
           <h3 className="text-xl font-semibold mb-4 text-text-main">
-            Pesanan Terbaru
+            New Order
           </h3>
-          <p className="text-text-muted">Silahkan cek menu Pesanan untuk detail lengkap.</p>
+          <p className="text-text-muted">Check order details</p>
         </div>
       </>
     );
@@ -73,73 +107,33 @@ const Dashboard = () => {
   return (
     <>
       <h1 className="text-4xl font-bold text-text-main mb-8">
-        Selamat Datang, Admin
+        Welcome Back, Admin
       </h1>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <StatCard
           icon={DollarSign}
           title="Total Penjualan"
-          value="Rp 12,5jt"
+          value={formatCurrencyCompact(stats.revenue)}
           description="Bulan ini"
+          isLoading={loading}
         />
         <StatCard
           icon={ReceiptText}
           title="Transaksi"
-          value="32"
+          value={stats.transactions}
           description="Bulan ini"
-        />
-        <StatCard
-          icon={Package}
-          title="LOW STOCK"
-          value="1"
-          description="Sleeping Bag"
+          isLoading={loading}
         />
         <StatCard
           icon={Truck}
           title="Pengiriman"
-          value="78"
+          value={stats.shipping}
           description="Dalam Pengiriman"
+          isLoading={loading}
         />
       </div>
 
-      <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 bg-content-bg p-6 rounded-2xl shadow-sm border border-border-main">
-          <h3 className="text-xl font-semibold mb-4 text-text-main">
-            Grafik Penjualan
-          </h3>
-          <div className="h-80 bg-zinc-100 rounded-lg flex items-center justify-center text-text-muted">
-            [Placeholder Grafik]
-          </div>
-        </div>
-        <div className="bg-content-bg p-6 rounded-2xl shadow-sm border border-border-main">
-          <h3 className="text-xl font-semibold mb-4 text-text-main">
-            Produk Terlaris
-          </h3>
-          <ul className="space-y-4">
-            <li className="flex justify-between items-center">
-              <div>
-                <p className="text-text-main font-medium">Tenda Dome</p>
-                <p className="text-sm text-text-muted">SKU: TD-001</p>
-              </div>
-              <span className="font-semibold text-text-main">25x</span>
-            </li>
-            <li className="flex justify-between items-center">
-              <div>
-                <p className="text-text-main font-medium">Sepatu Gunung</p>
-                <p className="text-sm text-text-muted">SKU: SG-045</p>
-              </div>
-              <span className="font-semibold text-text-main">18x</span>
-            </li>
-            <li className="flex justify-between items-center">
-              <div>
-                <p className="text-text-main font-medium">Carrier 60L</p>
-                <p className="text-sm text-text-muted">SKU: CR-060</p>
-              </div>
-              <span className="font-semibold text-text-main">12x</span>
-            </li>
-          </ul>
-        </div>
-      </div>
+
     </>
   );
 };

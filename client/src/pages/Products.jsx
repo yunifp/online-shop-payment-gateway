@@ -83,7 +83,7 @@ const Products = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div className="bg-content-bg/30 container mx-auto px-4 sm:px-6 lg:px-8 py-12">
       
       {/* --- FEATURED VOUCHERS SECTION --- */}
       {featuredVouchers.length > 0 && (

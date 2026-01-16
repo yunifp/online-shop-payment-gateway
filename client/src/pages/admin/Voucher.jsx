@@ -71,13 +71,13 @@ const Voucher = () => {
     
       <div className="bg-content-bg shadow-xl rounded-xl p-4 md:p-6">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-          <h1 className="text-3xl font-bold text-text-main">Manajemen Voucher</h1>
+          <h1 className="text-3xl font-bold text-text-main">Voucher Manajemen</h1>
           <button
             onClick={() => handleOpenModal(null)}
             className="flex items-center bg-theme-primary hover:bg-theme-primary-dark text-white font-medium py-2 px-5 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
           >
             <FaPlus className="mr-2" />
-            Tambah Voucher
+            Add Voucher
           </button>
         </div>
 
@@ -86,19 +86,19 @@ const Voucher = () => {
             <thead className="bg-gray-50">
               <tr>
                 <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-text-muted uppercase tracking-wider">
-                  Kode Voucher
+                  Voucher Code
                 </th>
                 <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-text-muted uppercase tracking-wider">
-                  Tipe
+                  Type
                 </th>
                 <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-text-muted uppercase tracking-wider">
-                  Nilai
+                  Off
                 </th>
                 <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-text-muted uppercase tracking-wider">
                   Status
                 </th>
                 <th scope="col" className="px-6 py-4 text-right text-xs font-semibold text-text-muted uppercase tracking-wider">
-                  Aksi
+                  Action
                 </th>
               </tr>
             </thead>

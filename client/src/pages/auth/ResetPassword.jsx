@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams, Link, useNavigate } from 'react-router-dom';
 import { Lock, Eye, EyeOff, ArrowLeft } from 'lucide-react';
 import AuthImage from '../../components/auth/AuthImage';
-import logo from '../../assets/logo.jpg';
+import logo from '../../assets/logo.webp';
 import useAuth from '../../hooks/useAuth';
 import { toast } from 'react-hot-toast';
 
@@ -41,7 +41,7 @@ const ResetPassword = () => {
   };
 
   return (
-    <div className="h-full py-10 md:py-0 md:min-h-screen flex flex-col md:flex-row bg-content-bg text-text-main">
+    <div className="bg-content-bg/30 h-full py-10 md:py-0 md:min-h-screen flex flex-col md:flex-row text-text-main">
       <AuthImage imageUrl={imageUrl} />
 
       <div className="w-full md:w-1/2 flex items-center justify-center p-8 lg:p-12">
@@ -50,7 +50,7 @@ const ResetPassword = () => {
 
           <h1 className="text-2xl font-bold text-center mb-4">Reset Password</h1>
           <p className="text-text-muted text-center mb-8">
-            Buat password baru untuk akun Anda.
+            Create new password for your account.
           </p>
 
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -60,7 +60,7 @@ const ResetPassword = () => {
               <input 
                 type={showPassword ? "text" : "password"} 
                 required 
-                placeholder="Password Baru"
+                placeholder="New Password"
                 className="w-full pl-12 pr-12 py-3 rounded-lg border border-border-main bg-zinc-50 focus:outline-none focus:border-theme-primary focus:ring-1 focus:ring-theme-primary"
                 value={passwords.new} 
                 onChange={(e) => setPasswords({...passwords, new: e.target.value})}
@@ -97,7 +97,7 @@ const ResetPassword = () => {
 
           <div className="mt-8 text-center">
             <Link to="/login" className="inline-flex items-center text-sm font-medium text-text-muted hover:text-theme-primary transition-colors">
-              <ArrowLeft size={16} className="mr-2" /> Batal & Kembali Login
+              <ArrowLeft size={16} className="mr-2" /> Cancel & Back to Login
             </Link>
           </div>
         </div>

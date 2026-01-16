@@ -133,10 +133,10 @@ const AddressEdit = ({ initialData, onCancel, onSuccess }) => {
       <div className="flex justify-between items-center mb-6">
         <h3 className="text-lg font-bold text-gray-900 flex items-center">
           <MapPin size={20} className="mr-2 text-theme-primary" /> 
-          {initialData ? 'Edit Alamat' : 'Tambah Alamat Baru'}
+          {initialData ? 'Edit Address' : 'Add New Address'}
         </h3>
         <button onClick={onCancel} className="text-sm font-medium flex items-center text-gray-500 hover:text-gray-700">
-          <X size={16} className="mr-1" /> Batal
+          <X size={16} className="mr-1" /> Cancel
         </button>
       </div>
 
@@ -145,11 +145,11 @@ const AddressEdit = ({ initialData, onCancel, onSuccess }) => {
         {/* Identitas */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
            <div>
-             <label className="block text-sm font-medium text-gray-700 mb-1">Nama Penerima</label>
+             <label className="block text-sm font-medium text-gray-700 mb-1">Recipient Name</label>
              <input type="text" required className="w-full border border-gray-300 rounded-lg px-3 py-2.5 outline-none focus:ring-2 focus:ring-theme-primary" value={formData.recipient_name} onChange={e => setFormData({...formData, recipient_name: e.target.value})} />
            </div>
            <div>
-             <label className="block text-sm font-medium text-gray-700 mb-1">No. HP Penerima</label>
+             <label className="block text-sm font-medium text-gray-700 mb-1">Recipient Phone</label>
              <input type="number" required className="w-full border border-gray-300 rounded-lg px-3 py-2.5 outline-none focus:ring-2 focus:ring-theme-primary" value={formData.phone_number} onChange={e => setFormData({...formData, phone_number: e.target.value})} />
            </div>
         </div>
@@ -159,7 +159,7 @@ const AddressEdit = ({ initialData, onCancel, onSuccess }) => {
         {/* Wilayah Dropdown */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Provinsi</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Province</label>
             <select required className="w-full border border-gray-300 rounded-lg px-3 py-2.5 outline-none focus:ring-2 focus:ring-theme-primary bg-white" value={formData.province_id} onChange={handleProvinceChange}>
               <option value="">Pilih Provinsi</option>
               {/* Map menggunakan .id dan .name */}
@@ -169,7 +169,7 @@ const AddressEdit = ({ initialData, onCancel, onSuccess }) => {
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Kota/Kabupaten</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">City/Regency</label>
             <select required disabled={!formData.province_id} className="w-full border border-gray-300 rounded-lg px-3 py-2.5 outline-none focus:ring-2 focus:ring-theme-primary bg-white disabled:bg-gray-100" value={formData.city_id} onChange={handleCityChange}>
               <option value="">Pilih Kota</option>
               {Array.isArray(cities) && cities.map(c => (
@@ -178,7 +178,7 @@ const AddressEdit = ({ initialData, onCancel, onSuccess }) => {
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Kecamatan</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">District</label>
             <select required disabled={!formData.city_id} className="w-full border border-gray-300 rounded-lg px-3 py-2.5 outline-none focus:ring-2 focus:ring-theme-primary bg-white disabled:bg-gray-100" value={formData.district_id} onChange={handleDistrictChange}>
               <option value="">Pilih Kecamatan</option>
               {Array.isArray(districts) && districts.map(d => (
@@ -187,7 +187,7 @@ const AddressEdit = ({ initialData, onCancel, onSuccess }) => {
             </select>
           </div>
           <div>
-             <label className="block text-sm font-medium text-gray-700 mb-1">Kelurahan</label>
+             <label className="block text-sm font-medium text-gray-700 mb-1">Sub District</label>
              <select disabled={!formData.district_id} className="w-full border border-gray-300 rounded-lg px-3 py-2.5 outline-none focus:ring-2 focus:ring-theme-primary bg-white disabled:bg-gray-100" value={formData.sub_district_id} onChange={handleSubDistrictChange}>
                <option value="">Pilih Kelurahan</option>
                {Array.isArray(subDistricts) && subDistricts.map(sd => (
@@ -199,24 +199,20 @@ const AddressEdit = ({ initialData, onCancel, onSuccess }) => {
 
         {/* Detail */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Alamat Lengkap</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Full Address</label>
           <textarea required rows={2} className="w-full border border-gray-300 rounded-lg px-3 py-2.5 outline-none focus:ring-2 focus:ring-theme-primary" value={formData.street} onChange={e => setFormData({...formData, street: e.target.value})} placeholder="Jl. Mawar No. 10..." />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Detail Lain</label>
-              <input type="text" className="w-full border border-gray-300 rounded-lg px-3 py-2.5 outline-none focus:ring-2 focus:ring-theme-primary" value={formData.details} onChange={e => setFormData({...formData, details: e.target.value})} />
-          </div>
-          <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Kode Pos</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Postal Code</label>
               <input type="number"  className="w-full border border-gray-300 rounded-lg px-3 py-2.5 outline-none focus:ring-2 focus:ring-theme-primary" value={formData.postal_code} onChange={e => setFormData({...formData, postal_code: e.target.value})} />
           </div>
         </div>
 
         <div className="pt-4 flex justify-end">
           <button type="submit" disabled={saving} className="flex items-center px-6 py-2.5 bg-theme-primary text-white rounded-lg hover:bg-theme-primary-dark transition shadow-md disabled:opacity-70">
-            {saving ? 'Menyimpan...' : <><Save size={18} className="mr-2" /> Simpan Alamat</>}
+            {saving ? 'Menyimpan...' : <><Save size={18} className="mr-2" /> Save Address</>}
           </button>
         </div>
       </form>

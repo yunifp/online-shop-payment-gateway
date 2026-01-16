@@ -3,32 +3,35 @@ import { Link } from "react-router-dom";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 // Import gambar dari folder assets
-import HeroCarousel1 from "../../assets/hero-carousel-1.png";
-import HeroCarousel2 from "../../assets/hero-carousel-2.png";
-import HeroCarousel3 from "../../assets/hero-carousel-3.png";
+import HeroCarousel1 from "../../assets/hero-carousel-1.webp";
+import HeroCarousel2 from "../../assets/hero-carousel-2.webp";
+import HeroCarousel3 from "../../assets/hero-carousel-3.webp";
 
 const slides = [
   {
     id: 1,
-    title: "Level Up Your Indoor Climbing",
-    description: "Discover premium gear and expert-led classes designed for every climber.",
-    ctaText: "Explore Products",
+    title: "Conquer Every Wall",
+    description:
+      "Elevate your performance with pro-grade gear designed for precision and endurance.",
+    ctaText: "Shop Collection",
     ctaLink: "/product",
     backgroundImage: HeroCarousel1,
   },
-{
+  {
     id: 2,
-    title: "Your First Climbing Kit",
-    description: "Everything you need to start: premium chalk bags, brushes, and beginner-friendly harnesses.",
-    ctaText: "Explore Gear",
+    title: "Begin Your Ascent",
+    description:
+      "Start your journey right with safe, comfortable, and reliable beginner essentials.",
+    ctaText: "Get Started",
     ctaLink: "/product",
     backgroundImage: HeroCarousel2,
   },
   {
     id: 3,
-    title: "New Arrival: Climbing Equipments",
-    description: "Experience maximum precision and grip for you.",
-    ctaText: "Explore Now",
+    title: "Crush Your Limits",
+    description:
+      "Dominate the crux with precision gear built for the toughest climbs.",
+    ctaText: "Shop Performance",
     ctaLink: "/product",
     backgroundImage: HeroCarousel3,
   },
@@ -66,7 +69,7 @@ const HeroSection = () => {
         {slides.map((slide) => (
           <div
             key={slide.id}
-            className="w-full flex-shrink-0 h-full bg-cover bg-center relative"
+            className="w-full flex-shrink-0 h-full bg-cover bg-center "
             style={{ backgroundImage: `url(${slide.backgroundImage})` }}
           >
             {/* Overlay gelap */}
@@ -96,7 +99,7 @@ const HeroSection = () => {
       {/* Navigasi Kiri */}
       <button
         onClick={prevSlide}
-        className="absolute top-1/2 left-4 md:left-8 -translate-y-1/2 z-20 p-3 bg-white/30 rounded-full text-white hover:bg-white/50 transition-all shadow-md backdrop-blur-sm"
+        className="absolute bottom-1 left-4 md:left-8 -translate-y-1/2 z-20 p-3 bg-white/30 rounded-full text-white hover:bg-white/50 transition-all shadow-md backdrop-blur-sm"
         aria-label="Previous slide"
       >
         <ChevronLeft size={28} />
@@ -105,7 +108,7 @@ const HeroSection = () => {
       {/* Navigasi Kanan */}
       <button
         onClick={nextSlide}
-        className="absolute top-1/2 right-4 md:right-8 -translate-y-1/2 z-20 p-3 bg-white/30 rounded-full text-white hover:bg-white/50 transition-all shadow-md backdrop-blur-sm"
+        className="absolute bottom-1 right-4 md:right-8 -translate-y-1/2 z-20 p-3 bg-white/30 rounded-full text-white hover:bg-white/50 transition-all shadow-md backdrop-blur-sm"
         aria-label="Next slide"
       >
         <ChevronRight size={28} />
@@ -118,7 +121,9 @@ const HeroSection = () => {
             key={index}
             onClick={() => goToSlide(index)}
             className={`w-3 h-3 rounded-full transition-all duration-300 ${
-              currentSlide === index ? "bg-white scale-125" : "bg-gray-400 hover:bg-white/70"
+              currentSlide === index
+                ? "bg-white scale-125"
+                : "bg-gray-400 hover:bg-white/70"
             } border border-gray-300`}
             aria-label={`Go to slide ${index + 1}`}
           />

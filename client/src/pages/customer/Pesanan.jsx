@@ -17,12 +17,12 @@ const Pesanan = () => {
   const [selectedTransaction, setSelectedTransaction] = useState(null);
 
   const tabs = [
-    { key: 'pending', label: 'Belum Bayar' },
-    { key: 'paid', label: 'Perlu Diproses' },
-    { key: 'processing', label: 'Sedang Dikemas' },
-    { key: 'shipped', label: 'Dalam Pengiriman' },
-    { key: 'completed', label: 'Selesai' },
-    { key: 'cancelled', label: 'Dibatalkan' },
+    { key: 'Pending Payment', label: 'Pending Payment' },
+    { key: 'paid', label: 'Paid' },
+    { key: 'processing', label: 'Processing' },
+    { key: 'shipped', label: 'Shipped' },
+    { key: 'completed', label: 'Completed' },
+    { key: 'cancelled', label: 'Cancelled' },
   ];
 
   useEffect(() => {
@@ -35,8 +35,8 @@ const Pesanan = () => {
   };
 
   const renderTable = () => {
-    if (loading) return <p className="p-6 text-text-muted">Memuat data...</p>;
-    if (transactions.length === 0) return <p className="p-6 text-text-muted">Tidak ada transaksi pada status ini.</p>;
+    if (loading) return <p className="p-6 text-text-muted">Loading data...</p>;
+    if (transactions.length === 0) return <p className="p-6 text-text-muted">No transactions found for this status.</p>;
     
     return (
       <>
@@ -45,9 +45,10 @@ const Pesanan = () => {
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">Order ID</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">Tanggal</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">Created at</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">Updated at</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">Total</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">No. Resi</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">Tracking Number</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">Status</th>
               </tr>
             </thead>
@@ -56,7 +57,24 @@ const Pesanan = () => {
                 <tr key={tx.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => handleRowClick(tx)}>
                   <td className="px-6 py-4 text-sm font-medium text-theme-primary">{tx.order_id_display || tx.invoice_number || tx.id}</td>
                   <td className="px-6 py-4 text-sm text-text-muted">
-                    {new Date(tx.created_at || tx.createdAt).toLocaleDateString('id-ID')}
+                    {new Date(tx.createdAt).toLocaleString('id-ID', {
+                      year: 'numeric', 
+                      month: 'numeric', 
+                      day: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                      second: '2-digit'
+                    })}
+                  </td>
+                  <td className="px-6 py-4 text-sm text-text-muted">
+                    {new Date( tx.updatedAt).toLocaleString('id-ID', {
+                      year: 'numeric', 
+                      month: 'numeric', 
+                      day: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                      second: '2-digit'
+                    })}
                   </td>
                   <td className="px-6 py-4 text-sm font-medium text-text-main">{formatCurrency(tx.grand_total || tx.total_amount)}</td>
                   <td className="px-6 py-4 text-sm text-text-muted">{tx.shipping_receipt_number || '-'}</td>
@@ -95,7 +113,7 @@ const Pesanan = () => {
 
   return (
     <>
-      <h1 className="text-2xl md:text-3xl font-bold text-text-main mb-4 md:mb-6">Riwayat Pesanan</h1>
+      <h1 className="text-2xl md:text-3xl font-bold text-text-main mb-4 md:mb-6">Order History</h1>
 
       <div className="bg-content-bg shadow-md rounded-lg">
         <div className="px-3 md:px-6">

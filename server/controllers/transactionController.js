@@ -154,7 +154,14 @@ class TransactionController {
       res.error(error.message, 400);
     }
   }
+  async getDashboardStats(req, res) {
+    try {
+      const result = await transactionService.getDashboardStats();
+      res.success(result, "Statistik dashboard berhasil diambil.");
+    } catch (error) {
+      res.error(error.message, 500);
+    }
+  }
 }
-
 
 module.exports = new TransactionController();

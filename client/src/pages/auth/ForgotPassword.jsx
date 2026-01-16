@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Mail, ArrowLeft } from 'lucide-react';
 import AuthImage from '../../components/auth/AuthImage'; 
-import logo from '../../assets/logo.jpg'; 
+import logo from '../../assets/logo.webp'; 
 import useAuth from '../../hooks/useAuth';
 
 const ForgotPassword = () => {
@@ -19,7 +19,7 @@ const ForgotPassword = () => {
   };
 
   return (
-    <div className="h-full py-10 md:py-0 md:min-h-screen flex flex-col md:flex-row bg-content-bg text-text-main">
+    <div className="bg-content-bg/30 h-full py-10 md:py-0 md:min-h-screen flex flex-col md:flex-row text-text-main">
       <AuthImage imageUrl={imageUrl} />
 
       <div className="w-full md:w-1/2 flex items-center justify-center p-8 lg:p-12">
@@ -28,16 +28,16 @@ const ForgotPassword = () => {
 
           {!isSent ? (
             <>
-              <h1 className="text-3xl font-bold text-center mb-4">Lupa Password?</h1>
+              <h1 className="text-3xl font-bold text-center mb-4">Forgot Password</h1>
               <p className="text-text-muted text-center mb-8">
-                Masukkan email yang terdaftar untuk menerima link reset password.
+                Enter your registered email to receive a password reset link.
               </p>
 
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="relative">
                   <span className="absolute left-4 top-1/2 -translate-y-1/2 text-text-subtle"><Mail size={20} /></span>
                   <input 
-                    type="email" required placeholder="Masukkan Email Anda"
+                    type="email" required placeholder="Enter Your Email"
                     className="w-full pl-12 pr-4 py-3 rounded-lg border border-border-main bg-zinc-50 focus:outline-none focus:border-theme-primary focus:ring-1 focus:ring-theme-primary"
                     value={email} onChange={(e) => setEmail(e.target.value)}
                   />
@@ -46,28 +46,28 @@ const ForgotPassword = () => {
                   type="submit" disabled={loading}
                   className="w-full bg-theme-primary text-white font-medium py-3 rounded-lg shadow-md hover:bg-theme-primary-dark transition-all disabled:opacity-50"
                 >
-                  {loading ? 'Mengirim...' : 'Kirim Link Reset'}
+                  {loading ? 'Sending...' : 'Send Reset Link'}
                 </button>
               </form>
             </>
           ) : (
             <div className="text-center">
               <div className="bg-green-100 text-green-700 p-4 rounded-xl mb-6">
-                <p className="font-semibold">Email Terkirim!</p>
-                <p className="text-sm mt-1">Silakan cek kotak masuk atau spam email <b>{email}</b> untuk instruksi selanjutnya.</p>
+                <p className="font-semibold">Email Sent!</p>
+                <p className="text-sm mt-1">Please check your inbox or spam folder for the email <b>{email}</b> to get the next steps.</p>
               </div>
               <button 
                 onClick={() => setIsSent(false)}
                 className="text-theme-primary font-medium hover:underline"
               >
-                Kirim ulang?
+                Send again?
               </button>
             </div>
           )}
 
           <div className="mt-8 text-center">
             <Link to="/login" className="inline-flex items-center text-sm font-medium text-text-muted hover:text-theme-primary transition-colors">
-              <ArrowLeft size={16} className="mr-2" /> Kembali ke Login
+              <ArrowLeft size={16} className="mr-2" /> Back to Login
             </Link>
           </div>
         </div>

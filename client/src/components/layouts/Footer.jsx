@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Facebook, Instagram, Twitter } from 'lucide-react';
-import logo from '../../assets/logo.jpg';
+import logo from '../../assets/logo.webp';
 
 const Footer = () => {
   return (

@@ -16,7 +16,7 @@ import {
   X,
   User, 
 } from "lucide-react";
-import logo from "../assets/logo.jpg";
+import logo from "../assets/logo.webp";
 
 const SidebarLink = ({ to, icon, text, isOpen, setIsOpen }) => {
   const location = useLocation();
@@ -143,7 +143,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
 
               {!isOpen && (
                 <span className="absolute left-full ml-4 px-3 py-1.5 bg-black text-white text-xs font-medium rounded-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50 shadow-lg">
-                  Produk
+                  Products
                 </span>
               )}
             </button>
@@ -158,14 +158,14 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
                   <SidebarLink
                     to="/admin/produk"
                     icon={<List size={18} />}
-                    text="List Produk"
+                    text="List Products"
                     isOpen={isOpen}
                     setIsOpen={setIsOpen}
                   />
                   <SidebarLink
                     to="/admin/kategori"
                     icon={<Tag size={18} />}
-                    text="Kategori"
+                    text="Categories"
                     isOpen={isOpen}
                     setIsOpen={setIsOpen}
                   />
@@ -177,7 +177,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
           <SidebarLink
             to="/admin/voucher"
             icon={<Ticket size={20} />}
-            text="Voucher"
+            text="Vouchers"
             isOpen={isOpen}
             setIsOpen={setIsOpen}
           />
@@ -185,7 +185,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
           <SidebarLink
             to="/admin/pengiriman"
             icon={<Truck size={20} />}
-            text="Pengiriman"
+            text="Shipping"
             isOpen={isOpen}
             setIsOpen={setIsOpen}
           />
@@ -195,7 +195,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
           <SidebarLink
             to="/admin/pesanan"
             icon={<History size={20} />}
-            text="Pesanan"
+            text="Orders"
             isOpen={isOpen}
             setIsOpen={setIsOpen}
           />
@@ -204,7 +204,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
             <SidebarLink
               to="/admin/users"
               icon={<Users size={20} />}
-              text="Manajemen User"
+              text="User Management"
               isOpen={isOpen}
               setIsOpen={setIsOpen}
             />
@@ -215,28 +215,28 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
           <SidebarLink
             to="/"
             icon={<Home size={20} />}
-            text="Beranda"
+            text="Home"
             isOpen={isOpen}
             setIsOpen={setIsOpen}
           />
           <SidebarLink
             to="/customer/profil"
             icon={<User size={20} />}
-            text="Profil Saya"
+            text="Profile"
             isOpen={isOpen}
             setIsOpen={setIsOpen}
           />
           <SidebarLink
             to="/customer/pesanan"
             icon={<History size={20} />}
-            text="Pesanan Saya"
+            text="Orders"
             isOpen={isOpen}
             setIsOpen={setIsOpen}
           />
           <SidebarLink
             to="/customer/pengiriman"
             icon={<Truck size={20} />}
-            text="Status Pengiriman"
+            text="Shipping Status"
             isOpen={isOpen}
             setIsOpen={setIsOpen}
           />

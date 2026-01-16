@@ -9,7 +9,7 @@ module.exports = {
         primaryKey: true,
         type: Sequelize.INTEGER,
       },
-      label: {
+      shop_name: {
         type: Sequelize.STRING,
         allowNull: false, // Misal: "Gudang Utama"
       },
@@ -41,6 +41,8 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: false,
       },
+      sub_district_id: { type: Sequelize.BIGINT, allowNull: false },
+      sub_district_name: { type: Sequelize.STRING, allowNull: false },
       postal_code: {
         type: Sequelize.STRING,
         allowNull: false,

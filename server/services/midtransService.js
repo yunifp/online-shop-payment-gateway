@@ -4,7 +4,7 @@ const midtransClient = require("midtrans-client");
 class MidtransService {
   constructor() {
     this.snap = new midtransClient.Snap({
-      isProduction: false, // Sandbox Mode
+      isProduction: process.env.MIDTRANS_IS_PRODUCTION, // Sandbox Mode
       serverKey: process.env.MIDTRANS_SERVER_KEY,
       clientKey: process.env.MIDTRANS_CLIENT_KEY,
     });

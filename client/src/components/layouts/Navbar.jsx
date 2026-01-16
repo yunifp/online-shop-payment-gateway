@@ -1,10 +1,14 @@
 import React, { useState, useEffect, useRef } from "react";
-import { NavLink } from "react-router-dom";
-import { Search, ShoppingCart, CircleUser, Menu, X } from "lucide-react";
-import logo from "../../assets/logo.jpg";
+import { NavLink, useNavigate } from "react-router-dom"; // Import useNavigate
+import { 
+  Search, ShoppingCart, CircleUser, Menu, X, 
+  LayoutDashboard, LogOut, LogIn 
+} from "lucide-react"; // Import icon tambahan
+import logo from "../../assets/logo.webp";
 import CartDropdown from "./CartDropdown";
 import ProfileDropdown from "./ProfileDropdown";
 import useCart from "../../hooks/useCart";
+import useAuth from "../../hooks/useAuth"; // 1. Import useAuth
 
 const Navbar = () => {
   const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -17,8 +21,24 @@ const Navbar = () => {
   const searchInputRef = useRef(null);
 
   const { cart } = useCart();
+  const { logout } = useAuth(); // 2. Ambil fungsi logout
+  const navigate = useNavigate();
+
+  // 3. Ambil data user dari LocalStorage untuk pengecekan reaktif di UI
+  const userString = localStorage.getItem("user");
+  const user = userString ? JSON.parse(userString) : null;
+
   const cartItems = cart?.items || [];
   const subtotal = cart?.subtotal || 0;
+
+  // 4. Helper untuk menentukan link dashboard berdasarkan role
+  const getDashboardLink = () => {
+    if (!user) return "/login";
+    if (user.role === "admin" || user.role === "staff") {
+      return "/admin";
+    }
+    return "/customer";
+  };
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -68,13 +88,10 @@ const Navbar = () => {
     setIsProfileOpen(!isOpen);
   };
 
-  const handleSearchClick = () => {
+  const handleMobileLogout = async () => {
     closeAllPopups();
-    setIsSearchExpanded(true);
-  };
-
-  const handleSearchBlur = () => {
-    setIsSearchExpanded(false);
+    await logout();
+    navigate("/login");
   };
 
   const navLinks = [
@@ -95,6 +112,7 @@ const Navbar = () => {
             />
           </NavLink>
 
+          {/* DESKTOP MENU */}
           <nav className="hidden md:flex md:items-center md:space-x-8">
             {navLinks.map((link) => (
               <NavLink
@@ -114,6 +132,7 @@ const Navbar = () => {
             ))}
           </nav>
 
+          {/* DESKTOP ICONS */}
           <div className="hidden md:flex items-center space-x-1">
             <div className="relative" ref={cartRef}>
               <button
@@ -161,6 +180,7 @@ const Navbar = () => {
         </div>
       </div>
 
+      {/* MOBILE MENU */}
       <div
         className={`fixed inset-0 z-50 bg-content-bg transform ${
           isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
@@ -182,7 +202,8 @@ const Navbar = () => {
           </button>
         </div>
 
-        <nav className="flex flex-col space-y-4 p-4">
+        <nav className="flex flex-col space-y-2 p-4">
+          {/* Link Standar */}
           {navLinks.map((link) => (
             <NavLink
               key={link.name}
@@ -200,27 +221,80 @@ const Navbar = () => {
             </NavLink>
           ))}
 
-          <hr className="border-border-main" />
+          {/* 5. Logic Tampilan Mobile berdasarkan User Login */}
+          {user ? (
+            <>
+              <div className="pt-2 pb-2">
+                <div className="px-3 py-2 bg-zinc-50 rounded-lg border border-zinc-100">
+                  <p className="text-sm font-semibold text-text-main">{user.name}</p>
+                  <p className="text-xs text-text-muted">{user.email}</p>
+                </div>
+              </div>
 
-          <div className="flex items-center justify-around pt-4">
+              {/* Link Dashboard */}
+              <NavLink
+                to={getDashboardLink()}
+                onClick={closeAllPopups}
+                className={({ isActive }) =>
+                  `flex items-center text-base font-medium p-3 rounded-lg transition-colors ${
+                    isActive
+                      ? "bg-theme-primary-light text-theme-primary"
+                      : "text-text-muted hover:bg-zinc-50 hover:text-text-main"
+                  }`
+                }
+              >
+                <LayoutDashboard size={20} className="mr-3" />
+                Dashboard
+              </NavLink>
+
+              {/* Tombol Logout */}
+              <button
+                onClick={handleMobileLogout}
+                className="flex items-center w-full text-left text-base font-medium p-3 rounded-lg text-red-600 hover:bg-red-50 transition-colors"
+              >
+                <LogOut size={20} className="mr-3" />
+                Logout
+              </button>
+            </>
+          ) : (
+            // Jika Belum Login
+            <NavLink
+              to="/login"
+              onClick={closeAllPopups}
+              className="flex items-center text-base font-medium p-3 rounded-lg text-text-muted hover:bg-zinc-50 hover:text-text-main transition-colors"
+            >
+              <LogIn size={20} className="mr-3" />
+              Login / Register
+            </NavLink>
+          )}
+
+          <hr className="border-border-main my-2" />
+
+          {/* Bottom Icons Mobile */}
+          <div className="flex items-center justify-around pt-2">
             <NavLink
               to="/cart"
               onClick={closeAllPopups}
               className="text-text-muted hover:text-text-main transition-colors p-2 relative"
             >
-              <ShoppingCart size={22} />
+              <ShoppingCart size={24} />
               {cartItems.length > 0 && (
-                <span className="absolute -top-1 -right-1 w-4 h-4 bg-theme-primary text-white text-xs rounded-full flex items-center justify-center">
+                <span className="absolute -top-1 -right-1 w-5 h-5 bg-theme-primary text-white text-xs rounded-full flex items-center justify-center">
                   {cartItems.length}
                 </span>
               )}
             </NavLink>
+            
+            {/* 6. PERBAIKAN PENTING: Ikon User mengarah ke Dashboard jika login */}
+            {/* Ini mencegah error 400 "Already Logged In" karena tidak mengarah ke /login lagi */}
             <NavLink
-              to="/login"
+              to={getDashboardLink()} 
               onClick={closeAllPopups}
-              className="text-text-muted hover:text-text-main transition-colors p-2"
+              className={`transition-colors p-2 ${
+                user ? "text-theme-primary" : "text-text-muted hover:text-text-main"
+              }`}
             >
-              <CircleUser size={22} />
+              <CircleUser size={24} />
             </NavLink>
           </div>
         </nav>

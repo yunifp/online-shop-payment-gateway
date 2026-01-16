@@ -26,7 +26,7 @@ const Cart = () => {
   const inputVoucherRef = useRef(null);
 
   const API_URL = import.meta.env.VITE_API_URL;
-  const BASE_URL = API_URL ? API_URL.split('/api')[0] : '';
+  const BASE_URL = API_URL ? API_URL.split('/api/v1')[0] : '';
 
   const constructImageUrl = (path) => {
     if (!path) return null;
@@ -80,12 +80,12 @@ const Cart = () => {
   const handleApplyVoucher = () => {
     setVoucherStatus(null);
     if (!voucherCode.trim()) {
-      setVoucherStatus({ type: "error", message: "Silakan masukkan kode voucher" });
+      setVoucherStatus({ type: "error", message: "Enter voucher code" });
       return;
     }
     const voucher = vouchers.find(v => v.code.toLowerCase() === voucherCode.trim().toLowerCase());
     if (!voucher) {
-      setVoucherStatus({ type: "error", message: "Voucher tidak tersedia atau kode salah" });
+      setVoucherStatus({ type: "error", message: "Voucher is not available or code is incorrect" });
       return;
     }
     const now = new Date();
@@ -97,26 +97,26 @@ const Cart = () => {
     const isQuotaEmpty = voucher.quota <= 0;
 
     if (isExpired || notStarted || isInactive || isQuotaEmpty) {
-      setVoucherStatus({ type: "error", message: "Voucher sudah tidak berlaku" });
+      setVoucherStatus({ type: "error", message: "Voucher is not available or Expired" });
       return;
     }
     const minPurchase = Number(voucher.min_purchase) || 0;
     if (subtotal < minPurchase) {
       setVoucherStatus({
         type: "info",
-        message: `Voucher tidak dapat digunakan. Min belanja ${formatCurrency(minPurchase)}`
+        message: `Voucher cannot be used. Min purchase ${formatCurrency(minPurchase)}`
       });
       return;
     }
     setAppliedVoucher(voucher);
-    setVoucherStatus({ type: "success", message: "Voucher berhasil digunakan" });
+    setVoucherStatus({ type: "success", message: "Voucher successfully applied" });
   };
 
   const handleRemoveVoucher = () => {
     setAppliedVoucher(null);
     setVoucherCode("");
     setVoucherStatus(null);
-    toast.success("Voucher dilepas");
+    toast.success("Voucher removed");
   };
 
   const discountAmount = useMemo(() => {
@@ -143,7 +143,7 @@ const Cart = () => {
   }
 
   return (
-    <div className="bg-app-bg min-h-screen py-12">
+    <div className="bg-content-bg/30 min-h-screen py-12">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <h1 className="text-4xl font-bold text-text-main mb-8">Your Cart</h1>
 
@@ -151,7 +151,7 @@ const Cart = () => {
           <div className="text-center bg-content-bg p-12 border border-border-main rounded-lg shadow-sm">
             <ShoppingBag size={64} className="mx-auto text-zinc-300 mb-4" />
             <p className="text-xl font-medium text-text-main">Your Cart is Empty</p>
-            <Link to="/product" className="inline-block mt-6 bg-theme-primary text-white font-medium py-3 px-8 rounded-lg shadow-md hover:bg-theme-primary-dark">Belanja Sekarang</Link>
+            <Link to="/product" className="inline-block mt-6 bg-theme-primary text-white font-medium py-3 px-8 rounded-lg shadow-md hover:bg-theme-primary-dark">Shop Now</Link>
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -165,7 +165,7 @@ const Cart = () => {
                           <img
                             src={constructImageUrl(item.image_url)}
                             alt={item.product_name}
-                            className="w-full h-full object-cover"
+                            className="w-full h-full object-fill"
                             onError={(e) => { e.target.onerror = null; e.target.src = "https://placehold.co/100x100?text=No+Img"; }}
                           />
                         ) : (
@@ -198,7 +198,7 @@ const Cart = () => {
 
             <div className="lg:col-span-1">
               <div className="bg-content-bg border border-border-main rounded-lg shadow-md p-6 sticky top-28">
-                <h2 className="text-2xl font-bold text-text-main mb-6">Ringkasan</h2>
+                <h2 className="text-2xl font-bold text-text-main mb-6">Summary</h2>
 
                 <div className="space-y-4 text-zinc-600">
                   <div className="flex justify-between">
@@ -209,7 +209,7 @@ const Cart = () => {
                   <div className="border-t border-b border-dashed border-zinc-300 py-4 my-2">
                     <div className="flex items-center gap-2 mb-3 text-sm font-semibold text-text-main">
                       <TicketPercent size={18} className="text-theme-primary" />
-                      <span>Code Voucher</span>
+                      <span>Voucher Code</span>
                     </div>
 
                     {!appliedVoucher ? (
@@ -274,7 +274,7 @@ const Cart = () => {
 
                   <div className="flex justify-between text-zinc-400 text-sm">
                     <span>Shipping Fee</span>
-                    <span>Dihitung saat checkout</span>
+                    <span>Calculated at checkout</span>
                   </div>
                 </div>
 

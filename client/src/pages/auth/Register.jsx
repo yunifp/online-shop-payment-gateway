@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { UserPlus, Mail, Lock, User } from 'lucide-react';
-import logo from '../../assets/logo.jpg';
+import logo from '../../assets/logo.webp';
 import AuthImage from '../../components/auth/AuthImage';
 import useAuth from '../../hooks/useAuth';
 
@@ -34,7 +34,7 @@ const Register = () => {
   };
 
   return (
-    <div className="h-full py-10 md:py-0 md:min-h-screen flex flex-col md:flex-row bg-content-bg text-text-main">
+    <div className="bg-content-bg/30 h-full py-10 md:py-0 md:min-h-screen flex flex-col md:flex-row text-text-main">
       {/* Form Section */}
       <div className="w-full md:w-1/2 flex items-center justify-center p-8 lg:p-12 order-last md:order-first">
         <div className="w-full max-w-md animate-in fade-in-50 slide-in-from-bottom-10 duration-500">
@@ -44,10 +44,10 @@ const Register = () => {
             className="h-12 object-contain mb-6 mx-auto" 
           />
           <h1 className="text-3xl font-bold text-text-main text-center mb-4">
-            Buat Akun Baru
+            Create New Account
           </h1>
           <p className="text-text-muted text-center mb-8">
-            Mulai petualangan Anda bersama kami.
+            Start your adventure with us.
           </p>
 
           <form className="space-y-5" onSubmit={handleSubmit}>
@@ -107,9 +107,9 @@ const Register = () => {
           </form>
 
           <p className="text-center text-text-muted mt-8">
-            Sudah punya akun?{' '}
+            Already have an account?{' '}
             <Link to="/login" className="font-medium text-theme-primary-dark hover:underline">
-              Login di sini
+              Login here
             </Link>
           </p>
         </div>

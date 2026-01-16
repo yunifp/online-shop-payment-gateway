@@ -66,8 +66,8 @@ module.exports = {
     // ============================================================
     // 4. Tabel VILLAGES (Desa/Kelurahan)
     // ============================================================
-    await queryInterface.createTable("villages", {
-      village_id: {
+    await queryInterface.createTable("sub_districts", {
+      sub_district_id: {
         allowNull: false,
         primaryKey: true,
         // Gunakan BIGINT jaga-jaga jika ID desa formatnya panjang (lebih dari 10 digit)
@@ -84,12 +84,12 @@ module.exports = {
       },
     });
 
-    await queryInterface.addIndex("villages", ["district_id"]);
+    await queryInterface.addIndex("sub_districts", ["district_id"]);
   },
 
   async down(queryInterface, Sequelize) {
     // Hapus urutan dari bawah ke atas (Anak dulu baru Induk)
-    await queryInterface.dropTable("villages");
+    await queryInterface.dropTable("sub_districts");
     await queryInterface.dropTable("districts");
     await queryInterface.dropTable("cities");
     await queryInterface.dropTable("provinces");

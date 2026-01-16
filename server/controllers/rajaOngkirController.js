@@ -43,11 +43,9 @@ class RajaOngkirController {
   }
   async getShippingCost(req, res) {
     try {
-      const userId = req.user.id;// Ambil berat dari body
+      const userId = req.user.id; // Ambil berat dari body
 
-      const shippingOptions = await rajaOngkirService.getShippingCost(
-        userId,
-      );
+      const shippingOptions = await rajaOngkirService.getShippingCost(userId);
       res.success(shippingOptions, "Shipping options retrieved");
     } catch (error) {
       res.error(error.message, 500);

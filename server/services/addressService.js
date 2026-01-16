@@ -26,6 +26,8 @@ class AddressService {
       city_name,
       district_id,
       district_name,
+      sub_district_id,
+      sub_district_name,
       postal_code,
     } = addressData;
 
@@ -39,6 +41,8 @@ class AddressService {
       city_name,
       district_id,
       district_name,
+      sub_district_id,
+      sub_district_name,
       postal_code,
     };
 

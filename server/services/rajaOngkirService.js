@@ -11,7 +11,7 @@ const {
   Province,
   City,
   District,
-  Village,
+  SubDistrict,
 } = require("../models");
 // 1. Buat instance axios untuk API Komerce
 function parseEtd(etd) {
@@ -156,7 +156,8 @@ class RajaOngkirService {
   async getSubDistricts(districtId) {
     if (!districtId) throw new Error("District ID is required");
     try {
-      const dbResult = await Village.findAll({
+      // UBAH: Panggil model SubDistrict
+      const dbResult = await SubDistrict.findAll({
         where: { district_id: districtId },
       });
 
@@ -164,7 +165,7 @@ class RajaOngkirService {
         return dbResult.map((row) => JSON.parse(row.data));
       }
 
-      console.log(`📡 Fetching Villages District ${districtId}...`);
+      console.log(`📡 Fetching SubDistricts District ${districtId}...`);
       const response = await komerceApi.get(
         `/destination/sub-district/${districtId}`
       );
@@ -173,19 +174,20 @@ class RajaOngkirService {
       if (!apiResults) return [];
 
       const bulkData = apiResults.map((v) => ({
-        village_id: v.id || v.subdistrict_id,
+        // UBAH: Mapping ke sub_district_id
+        sub_district_id: v.id || v.subdistrict_id,
         district_id: parseInt(districtId),
         data: JSON.stringify(v),
       }));
 
-      // 🔥 FIX PENTING: Update district_id juga!
-      await Village.bulkCreate(bulkData, {
+      // UBAH: Bulk Create ke SubDistrict
+      await SubDistrict.bulkCreate(bulkData, {
         updateOnDuplicate: ["data", "district_id"],
       });
 
       return apiResults;
     } catch (error) {
-      throw new Error(`Gagal mengambil desa: ${error.message}`);
+      throw new Error(`Gagal mengambil sub-district: ${error.message}`);
     }
   }
   /**

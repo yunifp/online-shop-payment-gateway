@@ -143,10 +143,10 @@ export default function CompleteProfile() {
         <div className="bg-white shadow rounded-lg overflow-hidden">
           <div className="px-6 py-8 border-b border-gray-200">
             <h2 className="text-2xl font-bold text-gray-900 text-center">
-              Satu langkah lagi!
+              One more step to complete your profile
             </h2>
             <p className="mt-2 text-center text-gray-600">
-              Lengkapi data diri dan alamat pengiriman Anda untuk melanjutkan.
+              Fill your contact and delivery address details below. 
             </p>
           </div>
 
@@ -155,12 +155,12 @@ export default function CompleteProfile() {
             {/* Bagian Kontak Penerima */}
             <div>
               <h3 className="text-lg font-medium text-gray-900 mb-4">
-                Informasi Kontak
+                Contact Information
               </h3>
               <div className="grid grid-cols-1 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
-                    Nama Penerima
+                    Recipient Name
                   </label>
                   <input
                     type="text"
@@ -171,7 +171,7 @@ export default function CompleteProfile() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
-                    Nomor WhatsApp / HP
+                    Phone Number/WhatsApp
                   </label>
                   <input
                     type="number"
@@ -190,19 +190,19 @@ export default function CompleteProfile() {
             {/* Bagian Alamat */}
             <div>
               <h3 className="text-lg font-medium text-gray-900 mb-4">
-                Alamat Pengiriman Utama
+                Delivery Address
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Provinsi */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Provinsi</label>
+                  <label className="block text-sm font-medium text-gray-700">Province</label>
                   <select
                     required
                     className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-theme-primary focus:border-theme-primary sm:text-sm rounded-md"
                     value={addressData.province_id}
                     onChange={handleProvinceChange}
                   >
-                    <option value="">Pilih Provinsi</option>
+                    <option value="">Select Province</option>
                     {Array.isArray(provinces) && provinces.map((p) => (
                       <option key={p.id} value={p.id}>{p.name}</option>
                     ))}
@@ -211,7 +211,7 @@ export default function CompleteProfile() {
 
                 {/* Kota */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Kota/Kabupaten</label>
+                  <label className="block text-sm font-medium text-gray-700">City/Regency</label>
                   <select
                     required
                     disabled={!addressData.province_id}
@@ -219,7 +219,7 @@ export default function CompleteProfile() {
                     value={addressData.city_id}
                     onChange={handleCityChange}
                   >
-                    <option value="">Pilih Kota</option>
+                    <option value="">Select City</option>
                     {Array.isArray(cities) && cities.map((c) => (
                       <option key={c.id} value={c.id}>{c.name}</option>
                     ))}
@@ -228,7 +228,7 @@ export default function CompleteProfile() {
 
                 {/* Kecamatan */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Kecamatan</label>
+                  <label className="block text-sm font-medium text-gray-700">District</label>
                   <select
                     required
                     disabled={!addressData.city_id}
@@ -236,7 +236,7 @@ export default function CompleteProfile() {
                     value={addressData.district_id}
                     onChange={handleDistrictChange}
                   >
-                    <option value="">Pilih Kecamatan</option>
+                    <option value="">Select District</option>
                     {Array.isArray(districts) && districts.map((d) => (
                       <option key={d.id} value={d.id}>{d.name}</option>
                     ))}
@@ -245,14 +245,14 @@ export default function CompleteProfile() {
 
                 {/* Kelurahan */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Kelurahan</label>
+                  <label className="block text-sm font-medium text-gray-700">Sub-District</label>
                   <select
                     disabled={!addressData.district_id}
                     className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-theme-primary focus:border-theme-primary sm:text-sm rounded-md disabled:bg-gray-100"
                     value={addressData.sub_district_id}
                     onChange={handleSubDistrictChange}
                   >
-                    <option value="">Pilih Kelurahan</option>
+                    <option value="">Select Sub-District</option>
                     {Array.isArray(subDistricts) && subDistricts.map((sd) => (
                       <option key={sd.id} value={sd.id}>{sd.name}</option>
                     ))}
@@ -263,7 +263,7 @@ export default function CompleteProfile() {
               {/* Detail Jalan */}
               <div className="mt-4">
                 <label className="block text-sm font-medium text-gray-700">
-                  Alamat Lengkap (Jalan, No. Rumah, RT/RW)
+                  Full Address (Street, House Number, RT/RW)
                 </label>
                 <textarea
                   required
@@ -279,7 +279,7 @@ export default function CompleteProfile() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
-                    Patokan / Detail Lainnya
+                    Landmark / Other Details
                   </label>
                   <input
                     type="text"
@@ -291,7 +291,7 @@ export default function CompleteProfile() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
-                    Kode Pos
+                    Postal Code
                   </label>
                   <input
                     type="number"

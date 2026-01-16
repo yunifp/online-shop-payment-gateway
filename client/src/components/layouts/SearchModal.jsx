@@ -45,21 +45,6 @@ const SearchModal = ({ isOpen, onClose }) => {
             <X size={24} />
           </button>
         </div>
-
-        {/* Dummy Results */}
-        <div className="bg-content-bg rounded-lg shadow-lg mt-2 p-4">
-          <h4 className="text-sm font-semibold text-text-muted mb-3">
-            Populer Saat Ini
-          </h4>
-          <div className="flex flex-col gap-2">
-            <Link to="/shop/tenda" onClick={onClose} className="p-2 rounded-md hover:bg-theme-primary-light">
-              Tenda Dome
-            </Link>
-            <Link to="/shop/sepatu" onClick={onClose} className="p-2 rounded-md hover:bg-theme-primary-light">
-              Sepatu Hiking
-            </Link>
-          </div>
-        </div>
       </div>
     </div>
   );

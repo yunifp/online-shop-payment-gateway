@@ -676,6 +676,36 @@ Mohon segera dipacking dan dikirim! 🚀`;
       throw new Error(error.message);
     }
   }
+
+  async getDashboardStats() {
+    try {
+      const successStatuses = ["paid", "processing", "shipped", "completed"];
+      const revenue = await Transaction.sum("grand_total", {
+        where: {
+          status: { [Op.in]: successStatuses },
+        },
+      });
+
+      const totalTransactions = await Transaction.count({
+        where: {
+          status: { [Op.in]: successStatuses },
+        },
+      });
+      const shippingCount = await Transaction.count({
+        where: {
+          status: "shipped",
+        },
+      });
+
+      return {
+        revenue: revenue || 0, 
+        transactions: totalTransactions || 0,
+        shipping: shippingCount || 0,
+      };
+    } catch (error) {
+      throw new Error(`Gagal menghitung statistik dashboard: ${error.message}`);
+    }
+  }
 }
 
 module.exports = new TransactionService();

@@ -118,7 +118,7 @@ const VoucherModal = ({ voucher, onClose, onSave }) => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Kode Voucher <span className="text-red-500">*</span>
+                Voucher code <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
@@ -131,7 +131,7 @@ const VoucherModal = ({ voucher, onClose, onSave }) => {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Tipe <span className="text-red-500">*</span>
+                Type <span className="text-red-500">*</span>
               </label>
               <select
                 name="type"
@@ -139,15 +139,15 @@ const VoucherModal = ({ voucher, onClose, onSave }) => {
                 onChange={handleChange}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg"
               >
-                <option value="percentage">Persentase</option>
-                <option value="fixed_amount">Potongan Tetap</option>
+                <option value="percentage">Percentage</option>
+                <option value="fixed_amount">Fixed Amount</option>
               </select>
             </div>
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Deskripsi
+              Description
             </label>
             <textarea
               name="description"
@@ -175,7 +175,7 @@ const VoucherModal = ({ voucher, onClose, onSave }) => {
             {formData.type === 'percentage' && (
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Maks. Potongan (Rp)
+                  Maks. Discount (Rp)
                 </label>
                 <input
                   type="text"
@@ -191,7 +191,7 @@ const VoucherModal = ({ voucher, onClose, onSave }) => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Min. Pembelian (Rp) <span className="text-red-500">*</span>
+                Min. Purchase (Rp) <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
@@ -220,7 +220,7 @@ const VoucherModal = ({ voucher, onClose, onSave }) => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Tanggal Mulai <span className="text-red-500">*</span>
+                Starting Date <span className="text-red-500">*</span>
               </label>
               <input
                 type="date"
@@ -233,7 +233,7 @@ const VoucherModal = ({ voucher, onClose, onSave }) => {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Tanggal Selesai <span className="text-red-500">*</span>
+                Ending Date <span className="text-red-500">*</span>
               </label>
               <input
                 type="date"
@@ -259,7 +259,7 @@ const VoucherModal = ({ voucher, onClose, onSave }) => {
               htmlFor="is_active"
               className="ml-2 block text-sm text-gray-900"
             >
-              Aktifkan Voucher
+              Activate Voucher
             </label>
           </div>
 
@@ -269,13 +269,13 @@ const VoucherModal = ({ voucher, onClose, onSave }) => {
               onClick={onClose}
               className="py-2 px-4 bg-gray-200 hover:bg-gray-300 rounded-lg"
             >
-              Batal
+              Cancel
             </button>
             <button
               type="submit"
               className="py-2 px-4 bg-theme-primary hover:bg-theme-primary-dark text-white rounded-lg"
             >
-              Simpan
+              Save
             </button>
           </div>
         </form>
